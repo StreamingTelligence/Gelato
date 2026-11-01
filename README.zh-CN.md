@@ -1,5 +1,6 @@
 <p align="center">
-  <img src="docs/assets/streamingtelligence-logo.png" alt="StreamingTelligence 标志" width="132">
+  <img src="docs/assets/streamingtelligence-mark-clean.png" alt="" width="64" align="middle">
+  <strong>StreamingTelligence Lab</strong>
 </p>
 
 # Gelato
