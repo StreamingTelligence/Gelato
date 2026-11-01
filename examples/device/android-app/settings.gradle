@@ -1,0 +1,17 @@
+pluginManagement {
+    repositories { google(); mavenCentral(); gradlePluginPortal() }
+    plugins {
+        id "com.android.application" version "8.9.2"
+        id "com.android.library" version "8.9.2"
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories { google(); mavenCentral(); maven { url = uri("https://jitpack.io") } }
+}
+rootProject.name = "GalateaExample"
+include(":app", ":device-sdk", ":android-phone", ":android-app", ":capacitor-android")
+project(":device-sdk").projectDir = file("../../../device-sdk/android")
+project(":android-phone").projectDir = file("../../../device-sdk/android/phone")
+project(":android-app").projectDir = file("../../../device-sdk/android/app-bridge")
+project(":capacitor-android").projectDir = file("../../../node_modules/@capacitor/android/capacitor")

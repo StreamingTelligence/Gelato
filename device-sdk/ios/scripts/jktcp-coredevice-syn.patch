@@ -1,0 +1,145 @@
+--- a/src/adapter.rs
++++ b/src/adapter.rs
+@@ -44,7 +44,7 @@
+ 
+ const INITIAL_RTO_MS: u64 = 200;
+ 
+-const OUR_WSCALE: u8 = 8;
++const OUR_WSCALE: u8 = 7;
+ 
+ /// Default cap on bytes in flight per connection, in bytes. Overridden via
+ /// [`Adapter::set_send_window`].
+@@ -169,6 +169,8 @@
+     read_buf: [u8; 65536],
+     bytes_in_buf: usize,
+     pcap: Option<PcapLog>,
++    /// Stable RFC 6437 flow label for all IPv6 packets in this tunnel.
++    flow_label: u32,
+     /// Maximum Segment Size for TCP data (payload only, no headers).
+     mss: usize,
+     send_window: usize,
+@@ -186,6 +188,7 @@
+             read_buf: [0u8; 65536],
+             bytes_in_buf: 0,
+             pcap: None,
++            flow_label: rand::random::<u32>() & 0x000f_ffff,
+             mss: DEFAULT_MSS,
+             send_window: DEFAULT_SEND_WINDOW,
+             udp_sockets: HashMap::new(),
+@@ -782,8 +785,30 @@
+                 "not connected",
+             ));
+         };
+-        // Advertise window scaling so the peer can scale its window field.
+-        let wscale = crate::packets::window_scale_option(OUR_WSCALE);
++        // Match the active-open SYN emitted by pymobiledevice3's proven
++        // userspace CoreDevice tunnel stack.
++        let advertised_mss = self.mss.min(u16::MAX as usize) as u16;
++        let mut options = vec![
++            2,
++            4,
++            (advertised_mss >> 8) as u8,
++            advertised_mss as u8,
++            4,
++            2,
++            1,
++        ];
++        options.extend_from_slice(&crate::packets::window_scale_option(OUR_WSCALE));
++        // Advertise timestamps and request a TCP Fast Open cookie. Together
++        // with the options above this produces the same 44-byte SYN header as
++        // the known-good pymobiledevice3 path.
++        let tsval = std::time::SystemTime::now()
++            .duration_since(std::time::UNIX_EPOCH)
++            .unwrap_or_default()
++            .as_millis() as u32;
++        options.extend_from_slice(&[8, 10]);
++        options.extend_from_slice(&tsval.to_be_bytes());
++        options.extend_from_slice(&0u32.to_be_bytes());
++        options.extend_from_slice(&[34, 2]);
+         let tcp = TcpPacket::create(
+             self.host_ip,
+             self.peer_ip,
+@@ -792,11 +817,14 @@
+             state.seq,
+             0,
+             TcpFlags {
++                ns: true,
++                cwr: true,
++                ece: true,
+                 syn: true,
+                 ..Default::default()
+             },
+-            u16::MAX - 1,
+-            &wscale,
++            u16::MAX,
++            &options,
+             &[],
+         );
+         let ip = self.ip_wrap(&tcp);
+@@ -985,7 +1013,11 @@
+                 Ipv4Packet::create(src, dst, protocol, 255, packet)
+             }
+             (IpAddr::V6(src), IpAddr::V6(dst)) => {
+-                Ipv6Packet::create(src, dst, protocol, 255, packet)
++                let mut ip = Ipv6Packet::create(src, dst, protocol, 64, packet);
++                ip[1] = (ip[1] & 0xf0) | ((self.flow_label >> 16) as u8 & 0x0f);
++                ip[2] = (self.flow_label >> 8) as u8;
++                ip[3] = self.flow_label as u8;
++                ip
+             }
+             _ => panic!("host_ip and peer_ip must be the same IP version"),
+         }
+--- a/src/packets.rs
++++ b/src/packets.rs
+@@ -426,6 +426,9 @@
+ 
+ #[derive(Debug, Default, Clone, Copy)]
+ pub struct TcpFlags {
++    pub ns: bool,  // Accurate ECN / former nonce-sum flag (header byte 12, bit 0)
++    pub cwr: bool, // Congestion Window Reduced flag
++    pub ece: bool, // ECN Echo flag
+     pub urg: bool, // Urgent pointer flag
+     pub ack: bool, // Acknowledgment flag
+     pub psh: bool, // Push flag
+@@ -438,6 +441,9 @@
+     /// Create a new `TcpFlags` struct from a raw byte.
+     pub fn from_byte(flags: u8) -> Self {
+         Self {
++            ns: false,
++            cwr: (flags & 0b1000_0000) != 0,
++            ece: (flags & 0b0100_0000) != 0,
+             urg: (flags & 0b0010_0000) != 0, // URG flag (bit 5)
+             ack: (flags & 0b0001_0000) != 0, // ACK flag (bit 4)
+             psh: (flags & 0b0000_1000) != 0, // PSH flag (bit 3)
+@@ -450,6 +456,12 @@
+     /// Convert the `TcpFlags` struct into a raw byte.
+     pub fn to_byte(&self) -> u8 {
+         let mut flags = 0u8;
++        if self.cwr {
++            flags |= 0b1000_0000;
++        }
++        if self.ece {
++            flags |= 0b0100_0000;
++        }
+         if self.urg {
+             flags |= 0b0010_0000;
+         }
+@@ -502,7 +514,8 @@
+         let acknowledgment_number =
+             u32::from_be_bytes([packet[8], packet[9], packet[10], packet[11]]);
+         let data_offset = (packet[12] >> 4) * 4; // Convert from 32-bit words to bytes
+-        let flags = TcpFlags::from_byte(packet[13]); // Parse flags
++        let mut flags = TcpFlags::from_byte(packet[13]); // Parse flags
++        flags.ns = (packet[12] & 0x01) != 0;
+         let window_size = u16::from_be_bytes([packet[14], packet[15]]);
+         let checksum = u16::from_be_bytes([packet[16], packet[17]]);
+         let urgent_pointer = u16::from_be_bytes([packet[18], packet[19]]);
+@@ -569,7 +582,7 @@
+         packet.extend_from_slice(&acknowledgment_number.to_be_bytes());
+ 
+         // Data Offset and Flags
+-        packet.push(data_offset << 4); // Data offset (4 bits) and reserved bits (4 bits)
++        packet.push((data_offset << 4) | u8::from(flags.ns)); // Data offset, reserved bits, NS/AE
+         packet.push(flags.to_byte()); // Flags byte
+ 
+         // Window Size, Checksum (set to zero first), and Urgent Pointer

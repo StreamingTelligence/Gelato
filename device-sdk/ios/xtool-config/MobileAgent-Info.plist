@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleShortVersionString</key>
+	<string>0.3.69</string>
+	<key>CFBundleVersion</key>
+	<string>99</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>用于发现和连接附近的专业配对设备。</string>
+	<key>CFBundleDisplayName</key>
+    <string>Gelato</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>dev.gelato.pair</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>gelato</string>
+            </array>
+        </dict>
+    </array>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.developer-tools</string>
+    <key>ServerizedRequiresDeveloperMode</key>
+    <true/>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_remotepairing._tcp</string>
+        <string>_remotepairing-pairable-host._tcp</string>
+        <string>_apple-mobdev2._tcp</string>
+    </array>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Gelato connects to the controlled network used for device pairing.</string>
+    <key>UIApplicationSceneManifest</key>
+    <dict>
+        <key>UIApplicationSupportsMultipleScenes</key>
+        <false/>
+    </dict>
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
+    <key>UILaunchScreen</key>
+    <dict/>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+	<key>GalateaBaseBundleIdentifier</key>
+	<string>dev.galatea.agent</string>
+	<key>GalateaAppGroup</key>
+	<string>group.dev.galatea.agent</string>
+	<key>GalateaCredentialService</key>
+	<string>dev.galatea.agent.credentials</string>
+	<key>GalateaWdaRunnerBundleIdentifier</key>
+	<string>dev.galatea.wda.xctrunner</string>
+</dict>
+</plist>

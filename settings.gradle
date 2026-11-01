@@ -1,0 +1,18 @@
+pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google(); mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://maven.rokid.com/repository/maven-public/") }
+    }
+}
+rootProject.name = "Galatea"
+include(":device-sdk", ":android-app", ":android-phone", ":rokid-native-sdk", ":capacitor-android", ":android-example", ":rokid-native-example")
+project(":device-sdk").projectDir = file("device-sdk/android")
+project(":android-app").projectDir = file("device-sdk/android/app-bridge")
+project(":android-phone").projectDir = file("device-sdk/android/phone")
+project(":rokid-native-sdk").projectDir = file("device-sdk/rokid-native")
+project(":capacitor-android").projectDir = file("node_modules/@capacitor/android/capacitor")
+project(":android-example").projectDir = file("examples/device/android-app/app")
+project(":rokid-native-example").projectDir = file("examples/device/rokid-native-app/app")

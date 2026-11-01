@@ -1,0 +1,11 @@
+{
+  "name": "@gelato/ios-macos-host",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "os": ["darwin"],
+  "scripts": { "start": "node src/server.mjs" },
+  "dependencies": { "appium": "3.5.2", "appium-xcuitest-driver": "11.17.3" }
+}

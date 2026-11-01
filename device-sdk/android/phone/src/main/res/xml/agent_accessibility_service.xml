@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged|typeViewScrolled"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagReportViewIds|flagIncludeNotImportantViews|flagRetrieveInteractiveWindows"
+    android:canRetrieveWindowContent="true"
+    android:description="@string/agent_accessibility_description"
+    android:notificationTimeout="50"
+    android:packageNames="com.aliyun.tongyi,com.deepseek.chat,com.heytap.speechassist,com.larus.nova,com.moonshot.kimichat,com.sankuai.meituan,com.xingin.xhs" />

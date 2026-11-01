@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gelato:v1:agent-descriptor",
+  "title": "Gelato v1 device connection descriptor",
+  "type": "object",
+  "required": [
+    "installationId",
+    "agentKind",
+    "hostPlatform",
+    "deviceKind",
+    "displayName",
+    "agentVersion"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "installationId": {
+      "type": "string",
+      "pattern": "^inst_[A-Za-z0-9_-]{12,80}$"
+    },
+    "agentKind": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,63}$"
+    },
+    "hostPlatform": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+    },
+    "deviceKind": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{1,63}$"
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "agentVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+    },
+    "pairingCode": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 16
+    },
+    "agentId": {
+      "type": "string",
+      "pattern": "^agt_[A-Za-z0-9_-]{10,80}$"
+    },
+    "credential": {
+      "type": "string",
+      "minLength": 32,
+      "maxLength": 160
+    }
+  }
+}

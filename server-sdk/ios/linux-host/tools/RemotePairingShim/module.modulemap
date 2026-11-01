@@ -1,0 +1,4 @@
+module RemotePairingShim {
+    header "RemotePairingShim.h"
+    export *
+}

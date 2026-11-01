@@ -1,0 +1,48 @@
+diff --git a/Sources/XToolSupport/SDKBuilder.swift b/Sources/XToolSupport/SDKBuilder.swift
+index 3f070e8..be75bac 100644
+--- a/Sources/XToolSupport/SDKBuilder.swift
++++ b/Sources/XToolSupport/SDKBuilder.swift
+@@ -181,6 +181,39 @@ struct SDKBuilder {
+             withIntermediateDirectories: false
+         )
+ 
++        let environment = ProcessInfo.processInfo.environment
++        if let archivePath = environment["XTOOL_DARWIN_TOOLSET_ARCHIVE"] {
++            guard !archivePath.isEmpty else {
++                throw Console.Error("XTOOL_DARWIN_TOOLSET_ARCHIVE cannot be empty")
++            }
++            guard FileManager.default.fileExists(atPath: archivePath) else {
++                throw Console.Error("Darwin toolset archive does not exist at '\(archivePath)'")
++            }
++            guard let expectedHash = environment["XTOOL_DARWIN_TOOLSET_SHA256"],
++                  expectedHash.count == 64 else {
++                throw Console.Error(
++                    "XTOOL_DARWIN_TOOLSET_SHA256 is required with a local toolset archive"
++                )
++            }
++            let hashResult = try await Subprocess.run(
++                .name("sha256sum"),
++                arguments: [archivePath],
++                output: .string(limit: .max),
++                error: .discarded
++            ).checkSuccess()
++            let actualHash = (hashResult.standardOutput ?? "")
++                .split(whereSeparator: { $0.isWhitespace })
++                .first
++                .map(String.init)
++            guard actualHash == expectedHash.lowercased() else {
++                throw Console.Error("Darwin toolset archive SHA-256 mismatch")
++            }
++            try await Subprocess.run(
++                .name("tar"),
++                arguments: ["xzf", archivePath],
++                workingDirectory: FilePath(toolsetDir),
++                output: .discarded,
++                error: .discarded
++            ).checkSuccess()
++            return
++        }
++
+         @Dependency(\.httpClient) var httpClient
+         let url = URL(string: """
+         https://github.com/xtool-org/darwin-tools-linux-llvm/releases/download/\

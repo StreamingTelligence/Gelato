@@ -1,0 +1,18 @@
+version: 1
+bundleID: dev.galatea.agent
+product: MobileAgent
+infoPath: xtool-config/MobileAgent-Info.plist
+entitlementsPath: MobileAgent/MobileAgent.entitlements
+extensions:
+  - product: PacketTunnel
+    bundleID: dev.galatea.agent.PacketTunnel
+    infoPath: xtool-config/PacketTunnel-Info.plist
+    entitlementsPath: PacketTunnel/PacketTunnel.entitlements
+  - product: ScreenBroadcast
+    bundleID: dev.galatea.agent.ScreenBroadcast
+    infoPath: xtool-config/ScreenBroadcast-Info.plist
+    entitlementsPath: ScreenBroadcast/ScreenBroadcast.entitlements
+  - product: ScreenBroadcastSetup
+    bundleID: dev.galatea.agent.ScreenBroadcastSetupUI
+    infoPath: xtool-config/ScreenBroadcastSetup-Info.plist
+    entitlementsPath: ScreenBroadcastSetup/ScreenBroadcastSetup.entitlements

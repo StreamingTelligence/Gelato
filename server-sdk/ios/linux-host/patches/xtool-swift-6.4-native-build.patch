@@ -1,0 +1,11 @@
+diff --git a/Sources/PackLib/Packer.swift b/Sources/PackLib/Packer.swift
+--- a/Sources/PackLib/Packer.swift
++++ b/Sources/PackLib/Packer.swift
+@@ -58,6 +58,7 @@ struct Packer {
+         let buildConfig = try await buildSettings.swiftPMInvocation(
+             forTool: "build",
+             arguments: [
++                "--build-system", "native",
+                 "--package-path", packageDir.path,
+                 "--scratch-path", ".build",
+                 // resolving can cause SwiftPM to overwrite the root package deps

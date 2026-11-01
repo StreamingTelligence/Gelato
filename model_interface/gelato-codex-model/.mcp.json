@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "gelato-codex-model": {
+      "command": "node",
+      "args": ["./dist/index.mjs", "mcp"],
+      "cwd": ".",
+      "env_vars": ["GELATO_MODEL_TOKEN", "GELATO_MODEL_HOST", "GELATO_MODEL_PORT", "GELATO_CODEX_BIN", "GELATO_CODEX_MODEL", "GELATO_CODEX_REASONING_EFFORT", "GELATO_CODEX_SERVICE_TIER", "GELATO_CODEX_SANDBOX", "HTTPS_PROXY", "HTTP_PROXY"],
+      "default_tools_approval_mode": "prompt",
+      "startup_timeout_sec": 15,
+      "tool_timeout_sec": 60
+    }
+  }
+}

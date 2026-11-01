@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gelato Controller</title>
+    <link rel="icon" type="image/png" href="/streamingtelligence-logo.png" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-title">
+            <img src="/streamingtelligence-logo.png" alt="StreamingTelligence" />
+            <h1>Gelato</h1>
+          </div>
+          <span id="connectionState">connecting</span>
+        </div>
+        <div id="deviceList" class="device-list"></div>
+        <section class="incoming-pairing">
+          <h2>Pairing requests</h2>
+          <p>Phone and Rokid companion apps enter this controller's address, then wait for your approval.</p>
+          <div id="pairingRequests" class="pairing-request-list"></div>
+          <p id="pairingRequestError" role="alert"></p>
+        </section>
+        <form id="pairForm" class="pairing-controls">
+          <label>Device
+            <select id="pairKind">
+              <option value="android-phone">Android phone</option>
+              <option value="ios">iPhone</option>
+              <option value="rokid-bolon-native">Rokid BOLON glasses (native)</option>
+              <option value="esp32s3-xiao-camera">XIAO ESP32S3 Sense camera</option>
+            </select>
+          </label>
+          <button type="submit">Pair a device</button>
+          <div id="pairResult" hidden>
+            <output id="pairCode"></output>
+            <label id="pairUrlLabel">Pairing link <textarea id="pairUrl" rows="3" readonly></textarea></label>
+            <a id="pairLink">Open on this device</a>
+            <p id="pairHint" hidden>Join the camera's temporary Wi-Fi, open http://192.168.4.1/, then enter this code there. USB is not used for pairing.</p>
+            <p id="pairExpiry"></p>
+          </div>
+          <p id="pairError" role="alert"></p>
+        </form>
+      </aside>
+      <section class="workspace">
+        <header class="toolbar">
+          <div>
+            <h2 id="deviceTitle">No device selected</h2>
+            <p id="deviceMeta"></p>
+          </div>
+          <div class="status-strip">
+            <span id="appState">Connection</span>
+            <span id="engineState">Driver</span>
+            <span id="screenState">Hardware</span>
+          </div>
+        </header>
+        <section class="control-surface">
+          <div class="screen-pane">
+            <video id="screenVideo" muted autoplay playsinline></video>
+            <img id="screenImage" alt="Device screen" hidden />
+          </div>
+          <div class="controls">
+            <div class="grid two">
+              <label>X <input id="tapX" type="number" value="540" /></label>
+              <label>Y <input id="tapY" type="number" value="1188" /></label>
+            </div>
+            <button id="tapButton">Tap</button>
+            <div class="grid two">
+              <label>Text <input id="textInput" type="text" value="hello" /></label>
+              <button id="typeButton">Type</button>
+            </div>
+            <div class="grid two">
+              <label>Package <input id="packageInput" type="text" value="com.android.settings" /></label>
+              <label>Activity <input id="activityInput" type="text" value="" /></label>
+            </div>
+            <button id="launchButton">Launch</button>
+            <div class="grid two">
+              <button id="screenshotButton">Screenshot</button>
+              <button id="uiTreeButton">UI Tree</button>
+            </div>
+            <label>Shell <textarea id="shellInput">echo ok</textarea></label>
+            <button id="shellButton">Run Shell</button>
+            <form id="capabilityForm" class="grid">
+              <label>Capability <select id="capabilitySelect" disabled></select></label>
+              <label>Arguments (JSON) <textarea id="capabilityArgs" spellcheck="false">{}</textarea></label>
+              <button id="capabilitySend" type="submit" disabled>Send command</button>
+            </form>
+            <a id="mediaLink" target="_blank" rel="noopener" hidden>Open captured media</a>
+            <pre id="commandOutput"></pre>
+          </div>
+        </section>
+      </section>
+    </main>
+    <dialog id="authDialog">
+      <form id="authForm" method="dialog">
+        <h2>Controller Access</h2>
+        <label>Access token <input id="authToken" type="password" autocomplete="current-password" required /></label>
+        <p id="authError" role="alert"></p>
+        <button type="submit">Sign in</button>
+      </form>
+    </dialog>
+    <script src="/vendor/jmuxer.min.js"></script>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

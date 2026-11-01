@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleShortVersionString</key>
+	<string>0.3.69</string>
+	<key>CFBundleVersion</key>
+	<string>99</string>
+	<key>CFBundleDisplayName</key>
+    <string>Serverized Tunnel</string>
+	<key>NSExtension</key>
+    <dict>
+        <key>NSExtensionPointIdentifier</key>
+        <string>com.apple.networkextension.packet-tunnel</string>
+        <key>NSExtensionPrincipalClass</key>
+        <string>PacketTunnel.PacketTunnelProvider</string>
+	</dict>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_remotepairing._tcp</string>
+		<string>_remotepairing-pairable-host._tcp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Serverized Tunnel discovers the iPhone RemotePairing service and publishes the paired Linux Device Hub.</string>
+	<key>GalateaBaseBundleIdentifier</key>
+	<string>dev.galatea.agent</string>
+	<key>GalateaAppGroup</key>
+	<string>group.dev.galatea.agent</string>
+	<key>GalateaCredentialService</key>
+	<string>dev.galatea.agent.credentials</string>
+	<key>GalateaWdaRunnerBundleIdentifier</key>
+	<string>dev.galatea.wda.xctrunner</string>
+</dict>
+</plist>

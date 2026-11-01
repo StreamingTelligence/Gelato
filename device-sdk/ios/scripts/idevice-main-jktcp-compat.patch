@@ -1,0 +1,71 @@
+diff --git a/ffi/src/xctest_rsd.rs b/ffi/src/xctest_rsd.rs
+index c96eb5e..72e5f4a 100644
+--- a/ffi/src/xctest_rsd.rs
++++ b/ffi/src/xctest_rsd.rs
+@@ -30,14 +30,16 @@ impl XCUITestListener for NoopListener {}
+ 
+ #[unsafe(no_mangle)]
+ pub unsafe extern "C" fn xctest_wda_start_rsd(
+-    adapter: *mut AdapterHandle,
+-    handshake: *mut RsdHandshakeHandle,
++    adapter: *mut *mut AdapterHandle,
++    handshake: *mut *mut RsdHandshakeHandle,
+     runner_bundle_id: *const c_char,
+     ios_major_version: u8,
+     out_handle: *mut *mut XctestWdaRunHandle,
+ ) -> *mut IdeviceFfiError {
+     if adapter.is_null()
+         || handshake.is_null()
++        || unsafe { (*adapter).is_null() }
++        || unsafe { (*handshake).is_null() }
+         || runner_bundle_id.is_null()
+         || out_handle.is_null()
+         || ios_major_version < 17
+@@ -46,8 +48,23 @@ pub unsafe extern "C" fn xctest_wda_start_rsd(
+         Ok(value) if !value.is_empty() => value.to_owned(),
+         _ => return ffi_err!(IdeviceError::FfiInvalidString),
+     };
+-    let mut adapter = unsafe { (*adapter).0.clone() };
+-    let mut handshake = unsafe { (*handshake).0.clone() };
++    // jktcp 0.1.1's AdapterHandle is intentionally single-owner. Consume
++    // both opaque handles and clear the caller's slots before any async work
++    // starts, so they cannot be freed twice.
++    let adapter = unsafe {
++        Box::from_raw(std::ptr::replace(
++            &mut *adapter,
++            std::ptr::null_mut(),
++        ))
++    };
++    let handshake = unsafe {
++        Box::from_raw(std::ptr::replace(
++            &mut *handshake,
++            std::ptr::null_mut(),
++        ))
++    };
++    let mut adapter = adapter.0;
++    let mut handshake = handshake.0;
+     let result = run_sync(async move {
+         let config = {
+             let mut installation_proxy =
+diff --git a/idevice/Cargo.toml b/idevice/Cargo.toml
+index 51e164d..6840ad4 100644
+--- a/idevice/Cargo.toml
++++ b/idevice/Cargo.toml
+@@ -24,7 +24,7 @@ plist = { version = "1.8" }
+ plist-macro = { version = "0.1.6" }
+ serde = { version = "1", features = ["derive"] }
+ ns-keyed-archive = { version = "0.1.5", optional = true }
+-jktcp = { version = "0.1.6", optional = true, default-features = false }
++jktcp = { version = "=0.1.1", optional = true, default-features = false }
+ 
+ thiserror = { version = "2" }
+ tracing = { version = "0.1.41" }
+@@ -256,7 +256,7 @@ tunnel_tcp_stack = ["dep:jktcp"]
+ # Adds pcap (`tokio::fs`) support to the software TCP tunnel. Pulls in
+ # `tokio/fs`, which doesn't compile on wasm32, so it is opt-in rather than
+ # implied by `tunnel_tcp_stack`.
+-tunnel_tcp_stack_pcap = ["tunnel_tcp_stack", "jktcp/pcap"]
++tunnel_tcp_stack_pcap = ["tunnel_tcp_stack"]
+ tss = ["dep:uuid", "_http"]
+ tunneld = ["_serde_json", "_http"]
+ usbmuxd = ["tokio/net", "dep:futures"]

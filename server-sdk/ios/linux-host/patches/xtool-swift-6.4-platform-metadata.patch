@@ -1,0 +1,27 @@
+diff --git a/Sources/XToolSupport/SDKBuilder.swift b/Sources/XToolSupport/SDKBuilder.swift
+--- a/Sources/XToolSupport/SDKBuilder.swift
++++ b/Sources/XToolSupport/SDKBuilder.swift
+@@ -566,13 +566,16 @@ struct SDKEntry {
+             E("clang"),
+         ]),
+         E("Platforms", ["iPhoneOS", "MacOSX", "iPhoneSimulator"].map {
+-            E("\($0).platform/Developer", [
+-                E("SDKs"),
+-                E("Library", [
+-                    E("Frameworks"),
+-                    E("PrivateFrameworks"),
+-                ]),
+-                E("usr/lib"),
++            E("\($0).platform", [
++                E("Info.plist"),
++                E("Developer", [
++                    E("SDKs"),
++                    E("Library", [
++                        E("Frameworks"),
++                        E("PrivateFrameworks"),
++                    ]),
++                    E("usr/lib"),
++                ]),
+             ])
+         }),
+     ])

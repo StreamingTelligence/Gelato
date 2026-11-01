@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gelato:v1:model-event",
+  "title": "Gelato model session event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "type", "eventId", "sessionId", "seq", "sentAt", "body"],
+  "properties": {
+    "protocol": {"const": "gelato.model.v1"},
+    "type": {"enum": ["session.open", "session.ready", "session.close", "session.error", "input.begin", "input.append", "input.commit", "reply.delta", "reply.complete", "turn.cancel", "turn.end", "action.propose", "action.result"]},
+    "eventId": {"type": "string", "pattern": "^[A-Za-z0-9_-]{8,96}$"},
+    "sessionId": {"type": "string", "pattern": "^[A-Za-z0-9_-]{8,96}$"},
+    "seq": {"type": "integer", "minimum": 1},
+    "sentAt": {"type": "string", "format": "date-time"},
+    "body": {"type": "object"}
+  },
+  "$defs": {
+    "turnId": {"type": "string", "pattern": "^[A-Za-z0-9_-]{8,96}$"},
+    "proposalId": {"type": "string", "pattern": "^[A-Za-z0-9_-]{8,96}$"},
+    "empty": {"type": "object", "maxProperties": 0},
+    "turn": {"type": "object", "additionalProperties": false, "required": ["turnId"], "properties": {"turnId": {"$ref": "#/$defs/turnId"}}}
+  },
+  "allOf": [
+    {"if": {"properties": {"type": {"const": "session.open"}}}, "then": {"properties": {"body": {"type": "object", "additionalProperties": false, "required": ["deviceId"], "properties": {"deviceId": {"type": "string", "minLength": 1, "maxLength": 128}, "model": {"type": "string", "maxLength": 128}}}}}},
+    {"if": {"properties": {"type": {"const": "session.ready"}}}, "then": {"properties": {"body": {"type": "object", "additionalProperties": false, "required": ["capabilities"], "properties": {"capabilities": {"type": "array", "uniqueItems": true, "items": {"enum": ["text", "image", "audio", "action-proposal"]}}}}}}},
+    {"if": {"properties": {"type": {"const": "session.close"}}}, "then": {"properties": {"body": {"$ref": "#/$defs/empty"}}}},
+    {"if": {"properties": {"type": {"const": "session.error"}}}, "then": {"properties": {"body": {"type": "object", "additionalProperties": false, "required": ["code", "retryable"], "properties": {"code": {"type": "string", "minLength": 1, "maxLength": 80}, "retryable": {"type": "boolean"}, "message": {"type": "string", "maxLength": 300}}}}}},
+    {"if": {"properties": {"type": {"const": "input.begin"}}}, "then": {"properties": {"body": {"type": "object", "additionalProperties": false, "required": ["turnId", "kind"], "properties": {"turnId": {"$ref": "#/$defs/turnId"}, "kind": {"enum": ["instruction", "observation"]}, "sourceMessageId": {"type": "string", "maxLength": 96}}}}}},
+    {"if": {"properties": {"type": {"const": "input.append"}}}, "then": {"properties": {"body": {"oneOf": [
+      {"type": "object", "additionalProperties": false, "required": ["turnId", "type", "text"], "properties": {"turnId": {"$ref": "#/$defs/turnId"}, "type": {"const": "text"}, "text": {"type": "string", "minLength": 1, "maxLength": 16384}}},
+      {"type": "object", "additionalProperties": false, "required": ["turnId", "type", "mimeType", "chunkIndex", "dataBase64", "final"], "properties": {"turnId": {"$ref": "#/$defs/turnId"}, "type": {"const": "media"}, "mimeType": {"type": "string", "pattern": "^[A-Za-z0-9.+-]+/[A-Za-z0-9.+-]+$", "maxLength": 200}, "chunkIndex": {"type": "integer", "minimum": 0}, "dataBase64": {"type": "string", "minLength": 1, "maxLength": 349528, "contentEncoding": "base64"}, "final": {"type": "boolean"}}}
+    ]}}}},
+    {"if": {"properties": {"type": {"enum": ["input.commit", "turn.cancel"]}}}, "then": {"properties": {"body": {"$ref": "#/$defs/turn"}}}},
+    {"if": {"properties": {"type": {"const": "reply.delta"}}}, "then": {"properties": {"body": {"type": "object", "additionalProperties": false, "required": ["turnId", "text"], "properties": {"turnId": {"$ref": "#/$defs/turnId"}, "text": {"type": "string", "minLength": 1, "maxLength": 16384}}}}}},
+    {"if": {"properties": {"type": {"const": "reply.complete"}}}, "then": {"properties": {"body": {"type": "object", "additionalProperties": false, "required": ["turnId", "text"], "properties": {"turnId": {"$ref": "#/$defs/turnId"}, "text": {"type": "string", "maxLength": 32768}}}}}},
+    {"if": {"properties": {"type": {"const": "turn.end"}}}, "then": {"properties": {"body": {"type": "object", "additionalProperties": false, "required": ["turnId", "status"], "properties": {"turnId": {"$ref": "#/$defs/turnId"}, "status": {"enum": ["completed", "cancelled", "failed"]}}}}}},
+    {"if": {"properties": {"type": {"const": "action.propose"}}}, "then": {"properties": {"body": {"type": "object", "additionalProperties": false, "required": ["turnId", "proposalId", "capability", "args"], "properties": {"turnId": {"$ref": "#/$defs/turnId"}, "proposalId": {"$ref": "#/$defs/proposalId"}, "capability": {"type": "string", "minLength": 1, "maxLength": 128}, "args": {"type": "object"}}}}}},
+    {"if": {"properties": {"type": {"const": "action.result"}}}, "then": {"properties": {"body": {"type": "object", "additionalProperties": false, "required": ["turnId", "proposalId", "status"], "properties": {"turnId": {"$ref": "#/$defs/turnId"}, "proposalId": {"$ref": "#/$defs/proposalId"}, "status": {"enum": ["rejected", "accepted", "completed", "failed", "unknown"]}, "commandId": {"type": "string", "maxLength": 96}, "result": {"type": "object"}}}}}}
+  ]
+}

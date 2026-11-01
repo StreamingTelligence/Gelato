@@ -1,0 +1,15 @@
+{
+  "name": "@gelato/server-core",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "description": "Shared Galatea protocol, pairing, commands and streams",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {".": {"types": "./dist/index.d.ts", "import": "./dist/index.js"}},
+  "files": ["dist", "README.md"],
+  "engines": {"node": ">=22"},
+  "scripts": {"build": "tsc -p tsconfig.json"},
+  "dependencies": {"@gelato/model-interface": "0.1.0", "express": "^4.19.2", "nanoid": "^5.0.7", "ws": "^8.18.0"}
+}

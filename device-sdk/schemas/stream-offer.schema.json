@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gelato:v1:stream-offer",
+  "title": "Galatea Typed Stream Offer",
+  "type": "object",
+  "required": [
+    "streamId",
+    "purpose",
+    "direction",
+    "contentType",
+    "maxFrameBytes",
+    "maxTotalBytes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "streamId": {
+      "type": "string",
+      "pattern": "^str_[A-Za-z0-9_-]{10,80}$"
+    },
+    "commandId": {
+      "type": "string",
+      "pattern": "^cmd_[A-Za-z0-9_-]{10,80}$"
+    },
+    "purpose": {
+      "enum": [
+        "audio",
+        "screen",
+        "file",
+        "tunnel",
+        "photo"
+      ]
+    },
+    "direction": {
+      "enum": [
+        "agent-to-controller",
+        "controller-to-agent"
+      ]
+    },
+    "contentType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "maxFrameBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2097152
+    },
+    "maxTotalBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 134217728
+    },
+    "expectedBytes": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 134217728
+    },
+    "metadata": {
+      "type": "object"
+    }
+  }
+}

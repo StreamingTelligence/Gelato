@@ -1,0 +1,22 @@
+{
+  "name": "@gelato/control-room",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@gelato/server-android": "0.1.0",
+    "@gelato/server-core": "0.1.0",
+    "@gelato/server-ios": "0.1.0",
+    "@gelato/model-interface": "0.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jmuxer": "^2.0.9",
+    "nanoid": "^5.0.7",
+    "ws": "^8.18.0"
+  }
+}

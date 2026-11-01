@@ -1,0 +1,13 @@
+{
+  "name": "@gelato/device-app",
+  "version": "1.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {"build": "tsc --noEmit && vite build", "sync": "node scripts/sync-native.mjs"},
+  "dependencies": {
+    "@capacitor/android": "7.4.3", "@capacitor/core": "7.4.3", "@capacitor/ios": "7.4.3",
+    "lucide-react": "0.468.0", "react": "19.1.1", "react-dom": "19.1.1"
+  },
+  "devDependencies": {"@types/react": "19.1.10", "@types/react-dom": "19.1.9", "@vitejs/plugin-react": "4.7.0", "typescript": "5.9.2", "vite": "6.4.3"}
+}

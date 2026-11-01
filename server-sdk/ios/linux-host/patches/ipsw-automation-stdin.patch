@@ -1,0 +1,367 @@
+--- a/cmd/ipsw/cmd/download/download_dev.go
++++ b/cmd/ipsw/cmd/download/download_dev.go
+@@ -24,7 +24,9 @@
+ package download
+ 
+ import (
++	"bufio"
+ 	"context"
++	"encoding/json"
+ 	"errors"
+ 	"fmt"
+ 	"os"
+@@ -56,6 +58,9 @@
+ 	downloadDevCmd.Flags().StringP("username", "u", "", "Apple Developer Portal username")
+ 	downloadDevCmd.Flags().StringP("password", "p", "", "Apple Developer Portal password")
+ 	downloadDevCmd.Flags().StringP("vault-password", "k", "", "Password to unlock credential vault (only for file vaults)")
++	downloadDevCmd.Flags().Bool("credentials-stdin", false, "read credentials and automation responses from standard input")
++	downloadDevCmd.Flags().Bool("automation-quiet", false, "suppress non-machine authentication output")
++	downloadDevCmd.Flags().String("latest-matching", "", "download the newest More Downloads file matching this regular expression")
+ 	// Filter flags
+ 	downloadDevCmd.Flags().StringP("version", "v", "", "iOS Version (i.e. 12.3.1)")
+ 	downloadDevCmd.Flags().StringP("build", "b", "", "iOS BuildID (i.e. 16F203)")
+@@ -85,6 +90,9 @@
+ 	viper.BindPFlag("download.dev.username", downloadDevCmd.Flags().Lookup("username"))
+ 	viper.BindPFlag("download.dev.password", downloadDevCmd.Flags().Lookup("password"))
+ 	viper.BindPFlag("download.dev.vault-password", downloadDevCmd.Flags().Lookup("vault-password"))
++	viper.BindPFlag("download.dev.credentials-stdin", downloadDevCmd.Flags().Lookup("credentials-stdin"))
++	viper.BindPFlag("download.dev.automation-quiet", downloadDevCmd.Flags().Lookup("automation-quiet"))
++	viper.BindPFlag("download.dev.latest-matching", downloadDevCmd.Flags().Lookup("latest-matching"))
+ 	// Filter flags
+ 	viper.BindPFlag("download.dev.version", downloadDevCmd.Flags().Lookup("version"))
+ 	viper.BindPFlag("download.dev.build", downloadDevCmd.Flags().Lookup("build"))
+@@ -141,6 +149,42 @@
+ 		// auth
+ 		username := viper.GetString("download.dev.username")
+ 		password := viper.GetString("download.dev.password")
++		credentialsStdin := viper.GetBool("download.dev.credentials-stdin")
++		automationQuiet := viper.GetBool("download.dev.automation-quiet")
++		latestMatching := viper.GetString("download.dev.latest-matching")
++
++		var automationInput *bufio.Reader
++		if credentialsStdin {
++			if username != "" || password != "" {
++				return fmt.Errorf("--credentials-stdin cannot be combined with --username or --password")
++			}
++			automationInput = bufio.NewReader(os.Stdin)
++			line, err := automationInput.ReadBytes('\n')
++			if err != nil {
++				return fmt.Errorf("failed to read credentials from standard input")
++			}
++			var credentials struct {
++				Username string `json:"username"`
++				Password string `json:"password"`
++			}
++			if err := json.Unmarshal(line, &credentials); err != nil ||
++				credentials.Username == "" || credentials.Password == "" {
++				return fmt.Errorf("invalid credentials JSON on standard input")
++			}
++			username = credentials.Username
++			password = credentials.Password
++		}
++		if automationQuiet {
++			log.SetLevel(log.ErrorLevel)
++		}
++		if latestMatching != "" {
++			if !viper.GetBool("download.dev.more") || asJSON || len(watchList) > 0 {
++				return fmt.Errorf("--latest-matching requires --more and cannot be combined with --json or --watch")
++			}
++			if output == "" {
++				return fmt.Errorf("--latest-matching requires --output")
++			}
++		}
+ 
+ 		home, err := os.UserHomeDir()
+ 		if err != nil {
+@@ -148,18 +192,20 @@
+ 		}
+ 
+ 		app := download.NewDevPortal(&download.DevConfig{
+-			Proxy:         proxy,
+-			Insecure:      insecure,
+-			SkipAll:       skipAll,
+-			ResumeAll:     resumeAll,
+-			RestartAll:    restartAll,
+-			RemoveCommas:  removeCommas,
+-			PreferSMS:     sms,
+-			PageSize:      pageSize,
+-			WatchList:     watchList,
+-			ConfigDir:     filepath.Join(home, ".ipsw"),
+-			VaultPassword: viper.GetString("download.dev.vault-password"),
+-			Verbose:       viper.GetBool("verbose"),
++			Proxy:                     proxy,
++			Insecure:                  insecure,
++			SkipAll:                   skipAll,
++			ResumeAll:                 resumeAll,
++			RestartAll:                restartAll,
++			RemoveCommas:              removeCommas,
++			PreferSMS:                 sms,
++			PageSize:                  pageSize,
++			WatchList:                 watchList,
++			ConfigDir:                 filepath.Join(home, ".ipsw"),
++			VaultPassword:             viper.GetString("download.dev.vault-password"),
++			Verbose:                   viper.GetBool("verbose"),
++			AutomationInput:           automationInput,
++			DisableSessionPersistence: credentialsStdin,
+ 		})
+ 
+ 		if err := app.Init(); err != nil {
+@@ -170,6 +216,10 @@
+ 			return fmt.Errorf("failed to login: %v", err)
+ 		}
+ 
++		if latestMatching != "" {
++			return app.DownloadLatestMatchingMore(latestMatching, output)
++		}
++
+ 		if viper.GetBool("download.dev.kdk") {
+ 			return app.DownloadKDK(viper.GetString("download.dev.version"), viper.GetString("download.dev.build"), output)
+ 		}
+--- a/internal/download/dev_portal.go
++++ b/internal/download/dev_portal.go
+@@ -3,6 +3,7 @@
+ package download
+ 
+ import (
++	"bufio"
+ 	"bytes"
+ 	"context"
+ 	"crypto"
+@@ -104,15 +105,17 @@
+ 	// download type config
+ 	WatchList []string
+ 	// behavior config
+-	SkipAll       bool
+-	ResumeAll     bool
+-	RestartAll    bool
+-	RemoveCommas  bool
+-	PreferSMS     bool
+-	PageSize      int
+-	Verbose       bool
+-	VaultPassword string
+-	ConfigDir     string
++	SkipAll                   bool
++	ResumeAll                 bool
++	RestartAll                bool
++	RemoveCommas              bool
++	PreferSMS                 bool
++	PageSize                  int
++	Verbose                   bool
++	VaultPassword             string
++	ConfigDir                 string
++	AutomationInput           *bufio.Reader
++	DisableSessionPersistence bool
+ }
+ 
+ // DevPortal is the dev portal object
+@@ -441,6 +444,13 @@
+ 
+ // Login to Apple
+ func (dp *DevPortal) Login(username, password string) error {
++	if dp.config.DisableSessionPersistence {
++		if err := dp.getITCServiceKey(); err != nil {
++			return err
++		}
++		return dp.signIn(username, password)
++	}
++
+ 	if len(username) == 0 || len(password) == 0 {
+ 		creds, err := dp.Vault.Get(VaultName)
+ 		if err != nil { // failed to get credentials from vault (prompt user for credentials)
+@@ -804,20 +811,43 @@
+ 		} else if dp.authOptions.NoTrustedDevices && len(dp.authOptions.TrustedPhoneNumbers) > 1 {
+ 			codeType = "phone"
+ 			phoneNumber := 0
+-			var choices []string
+-			for _, num := range dp.authOptions.TrustedPhoneNumbers {
+-				choices = append(choices, num.NumberWithDialCode)
+-			}
+-			prompt := &survey.Select{
+-				Message: "Choose a phone number to send the SMS code to:",
+-				Options: choices,
+-			}
+-			if err := survey.AskOne(prompt, &phoneNumber); err != nil {
+-				if err == terminal.InterruptErr {
+-					log.Warn("Exiting...")
+-					os.Exit(0)
++			if dp.config.AutomationInput != nil {
++				phones := make([]map[string]any, 0, len(dp.authOptions.TrustedPhoneNumbers))
++				for index, num := range dp.authOptions.TrustedPhoneNumbers {
++					phones = append(phones, map[string]any{
++						"index": index,
++						"label": num.ObfuscatedNumber,
++					})
+ 				}
+-				return err
++				var response struct {
++					PhoneIndex int `json:"phoneIndex"`
++				}
++				if err := dp.readAutomationResponse(map[string]any{
++					"event":  "needs_phone",
++					"phones": phones,
++				}, &response); err != nil {
++					return err
++				}
++				if response.PhoneIndex < 0 || response.PhoneIndex >= len(dp.authOptions.TrustedPhoneNumbers) {
++					return fmt.Errorf("invalid trusted phone selection")
++				}
++				phoneNumber = response.PhoneIndex
++			} else {
++				var choices []string
++				for _, num := range dp.authOptions.TrustedPhoneNumbers {
++					choices = append(choices, num.NumberWithDialCode)
++				}
++				prompt := &survey.Select{
++					Message: "Choose a phone number to send the SMS code to:",
++					Options: choices,
++				}
++				if err := survey.AskOne(prompt, &phoneNumber); err != nil {
++					if err == terminal.InterruptErr {
++						log.Warn("Exiting...")
++						os.Exit(0)
++					}
++					return err
++				}
+ 			}
+ 			phoneID = dp.authOptions.TrustedPhoneNumbers[phoneNumber].ID
+ 			if err := dp.requestCode(phoneID); err != nil {
+@@ -864,15 +894,27 @@
+ 		// 	}
+ 		// }
+ 		if len(code) == 0 {
+-			prompt := &survey.Password{
+-				Message: "Please type your verification code:",
+-			}
+-			if err := survey.AskOne(prompt, &code); err != nil {
+-				if err == terminal.InterruptErr {
+-					log.Warn("Exiting...")
+-					os.Exit(0)
++			if dp.config.AutomationInput != nil {
++				var response struct {
++					Code string `json:"code"`
+ 				}
+-				return err
++				if err := dp.readAutomationResponse(map[string]any{
++					"event": "needs_2fa",
++				}, &response); err != nil {
++					return err
++				}
++				code = response.Code
++			} else {
++				prompt := &survey.Password{
++					Message: "Please type your verification code:",
++				}
++				if err := survey.AskOne(prompt, &code); err != nil {
++					if err == terminal.InterruptErr {
++						log.Warn("Exiting...")
++						os.Exit(0)
++					}
++					return err
++				}
+ 			}
+ 		}
+ 
+@@ -888,13 +930,32 @@
+ 		return fmt.Errorf("failed to sign in; expected status code 409 (for two factor auth): response received %s", response.Status)
+ 	}
+ 
+-	if err := dp.storeSession(); err != nil {
+-		return err
++	if !dp.config.DisableSessionPersistence {
++		if err := dp.storeSession(); err != nil {
++			return err
++		}
+ 	}
+ 
+ 	return nil
+ }
+ 
++func (dp *DevPortal) readAutomationResponse(event map[string]any, destination any) error {
++	if dp.config.AutomationInput == nil {
++		return fmt.Errorf("automation input is not configured")
++	}
++	if err := json.NewEncoder(os.Stdout).Encode(event); err != nil {
++		return fmt.Errorf("failed to write automation event: %v", err)
++	}
++	line, err := dp.config.AutomationInput.ReadBytes('\n')
++	if err != nil {
++		return fmt.Errorf("failed to read automation response")
++	}
++	if err := json.Unmarshal(line, destination); err != nil {
++		return fmt.Errorf("invalid automation response")
++	}
++	return nil
++}
++
+ func (dp *DevPortal) getAuthOptions() error {
+ 
+ 	req, err := http.NewRequest("GET", "https://idmsa.apple.com/appleauth/auth", nil)
+@@ -1519,6 +1580,58 @@
+ 	return nil
+ }
+ 
++// DownloadLatestMatchingMore downloads the newest More Downloads file whose
++// product name, display name, or filename matches pattern.
++func (dp *DevPortal) DownloadLatestMatchingMore(pattern, folder string) error {
++	matcher, err := regexp.Compile(pattern)
++	if err != nil {
++		return fmt.Errorf("invalid latest-match regular expression: %v", err)
++	}
++	downloads, err := dp.getDownloads()
++	if err != nil {
++		return fmt.Errorf("failed to get More Downloads: %v", err)
++	}
++	for _, product := range downloads.Downloads {
++		for _, file := range product.Files {
++			searchableName := strings.Join(
++				[]string{product.Name, file.DisplayName, file.Filename},
++				" ",
++			)
++			if !matcher.MatchString(searchableName) {
++				continue
++			}
++			destination := filepath.Join(
++				filepath.Clean(folder),
++				filepath.Base(getDestName(file.URL(), dp.config.RemoveCommas)),
++			)
++			if info, err := os.Stat(destination); err == nil &&
++				file.FileSize > 0 && info.Size() != int64(file.FileSize) {
++				if err := os.Remove(destination); err != nil {
++					return fmt.Errorf("failed to remove incomplete matching download: %v", err)
++				}
++			}
++			if err := json.NewEncoder(os.Stdout).Encode(map[string]any{
++				"event":       "selected_download",
++				"product":     product.Name,
++				"file":        file.DisplayName,
++				"size":        file.FileSize,
++				"destination": filepath.Base(destination),
++			}); err != nil {
++				return fmt.Errorf("failed to write selected-download event: %v", err)
++			}
++			if err := dp.Download(file.URL(), folder); err != nil {
++				return err
++			}
++			info, err := os.Stat(destination)
++			if err != nil || (file.FileSize > 0 && info.Size() != int64(file.FileSize)) {
++				return fmt.Errorf("matching download did not complete at the expected size")
++			}
++			return nil
++		}
++	}
++	return fmt.Errorf("no More Downloads file matched the requested regular expression")
++}
++
+ // DownloadADC downloads an ADC file that requires a valid ADCDownloadAuth cookie, but not full dev portal session auth
+ func (dp *DevPortal) DownloadADC(adcURL string) error {
+ 	var adcDownloadAuth string
+@@ -1669,6 +1733,9 @@ func (dp *DevPortal) getDownloads() (*Downloads, error) {
+ 	if err := json.Unmarshal(body, &downloads); err != nil {
+ 		return nil, fmt.Errorf("failed to deserialize response body JSON: %v", err)
+ 	}
++	if downloads.ResultCode != 0 {
++		return nil, fmt.Errorf("developer portal rejected downloads request with result code %d", downloads.ResultCode)
++	}
+ 
+ 	log.Debugf("Get Downloads: (%d):\n%s\n", response.StatusCode, string(body))
+ 

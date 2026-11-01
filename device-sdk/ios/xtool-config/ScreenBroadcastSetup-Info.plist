@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleShortVersionString</key>
+	<string>0.3.69</string>
+	<key>CFBundleVersion</key>
+	<string>99</string>
+	<key>CFBundleDisplayName</key>
+    <string>Gelato Screen Broadcast</string>
+    <key>NSExtension</key>
+    <dict>
+        <key>NSExtensionAttributes</key>
+        <dict>
+            <key>NSExtensionActivationRule</key>
+            <dict>
+                <key>NSExtensionActivationSupportsReplayKitStreaming</key>
+                <true/>
+            </dict>
+        </dict>
+        <key>NSExtensionPointIdentifier</key>
+        <string>com.apple.broadcast-services-setupui</string>
+        <key>NSExtensionPrincipalClass</key>
+        <string>ScreenBroadcastSetup.BroadcastSetupViewController</string>
+    </dict>
+	<key>GalateaBaseBundleIdentifier</key>
+	<string>dev.galatea.agent</string>
+	<key>GalateaAppGroup</key>
+	<string>group.dev.galatea.agent</string>
+	<key>GalateaCredentialService</key>
+	<string>dev.galatea.agent.credentials</string>
+	<key>GalateaWdaRunnerBundleIdentifier</key>
+	<string>dev.galatea.wda.xctrunner</string>
+</dict>
+</plist>

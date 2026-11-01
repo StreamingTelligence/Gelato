@@ -1,0 +1,177 @@
+diff --git a/Sources/Zupersign/signer.cpp b/Sources/Zupersign/signer.cpp
+--- a/Sources/Zupersign/signer.cpp
++++ b/Sources/Zupersign/signer.cpp
+@@ -7,6 +7,14 @@
+ #include "bundle.h"
+ #include "signing.h"
+ 
++static string normalize_bundle_path(string path) {
++    replace(path.begin(), path.end(), '\\', '/');
++    while (path.size() > 1 && path.back() == '/') {
++        path.pop_back();
++    }
++    return path;
++}
++
+ static void print_ssl_err(char **exception, const char *reason) {
+     unsigned long last_error = ERR_peek_last_error();
+     if (!last_error) {
+@@ -28,6 +36,28 @@ int zsign_sign(
+ ) {
+     bool success;
+ 
++    if (num_entitlements == 0) {
++        *exception = strdup("Missing root app entitlements");
++        return -1;
++    }
++
++    map<string, string> entitlement_mapping;
++    string app_path = normalize_bundle_path(app_directory);
++    const entitlements_data_t *root_entitlements = NULL;
++    for (size_t i = 0; i < num_entitlements; i++) {
++        string bundle_path = normalize_bundle_path(entitlements[i].bundle_path);
++        entitlement_mapping[bundle_path] = string(
++            static_cast<const char *>(entitlements[i].data), entitlements[i].len
++        );
++        if (bundle_path == app_path) {
++            root_entitlements = &entitlements[i];
++        }
++    }
++    if (root_entitlements == NULL) {
++        *exception = strdup("Missing entitlements for root app bundle");
++        return -1;
++    }
++
+     progress(progressContext, -1);
+ 
+     EVP_PKEY *pkey = NULL;
+@@ -62,10 +92,9 @@ int zsign_sign(
+     }
+ 
+     ZSignAsset asset;
+-    // TODO: Use diff ents for diff products
+     success = asset.Init(
+         cert, pkey, "",
+-        string(static_cast<const char *>(entitlements[0].data), entitlements[0].len),
++        entitlement_mapping[app_path],
+         is_adhoc, false, false
+     );
+     if (!success) {
+@@ -77,6 +106,7 @@ int zsign_sign(
+     }
+ 
+     ZBundle bundle;
++    bundle.SetEntitlementMapping(entitlement_mapping);
+     success = bundle.SignFolder(&asset, app_directory, "", "", "", std::vector<string>(), true, false, false);
+ 
+     EVP_PKEY_free(pkey);
+diff --git a/src/bundle.cpp b/src/bundle.cpp
+--- a/src/bundle.cpp
++++ b/src/bundle.cpp
+@@ -11,6 +11,31 @@ ZBundle::ZBundle()
+     m_bWeakInject = false;
+ }
+ 
++static string NormalizeBundlePath(string path)
++{
++    replace(path.begin(), path.end(), '\\', '/');
++    while (path.size() > 1 && path.back() == '/') {
++        path.pop_back();
++    }
++    return path;
++}
++
++void ZBundle::SetEntitlementMapping(const map<string, string>& entitlementMapping)
++{
++    m_entitlementMapping.clear();
++    for (const auto& entry : entitlementMapping) {
++        m_entitlementMapping[NormalizeBundlePath(entry.first)] = entry.second;
++    }
++}
++
++void ZBundle::UseEntitlementsForFolder(const string& strFolder)
++{
++    const auto found = m_entitlementMapping.find(NormalizeBundlePath(strFolder));
++    m_pSignAsset->m_strEntitleData = found == m_entitlementMapping.end()
++        ? m_strDefaultEntitlements
++        : found->second;
++}
++
+ bool ZBundle::FindAppFolder(const string& strFolder, string& strAppFolder)
+ {
+     if (ZFile::IsPathSuffix(strFolder, ".app") || ZFile::IsPathSuffix(strFolder, ".appex")) {
+@@ -260,6 +285,14 @@ void ZBundle::GetNodeChangedFiles(jvalue& jvNode)
+ 
+ bool ZBundle::SignNode(jvalue& jvNode)
+ {
++    string strFolder = jvNode["path"];
++    string strBaseFolder = m_strAppFolder;
++    if ("/" != strFolder) {
++        strBaseFolder += "/";
++        strBaseFolder += strFolder;
++    }
++    UseEntitlementsForFolder(strBaseFolder);
++
+     if (jvNode.has("files")) {
+         for (size_t i = 0; i < jvNode["files"].size(); i++) {
+             string strFile = jvNode["files"][i];
+@@ -281,7 +314,6 @@ bool ZBundle::SignNode(jvalue& jvNode)
+     jbase64 b64;
+     string strInfoSHA1;
+     string strInfoSHA256;
+-    string strFolder = jvNode["path"];
+     string strBundleId = jvNode["bundle_id"];
+     string strBundleExe = jvNode["bundle_executable"];
+     b64.decode(jvNode["sha1"].as_cstr(), strInfoSHA1);
+@@ -296,12 +328,6 @@ bool ZBundle::SignNode(jvalue& jvNode)
+     strBundleExe = ic.U82A(strBundleExe);
+ #endif
+ 
+-    string strBaseFolder = m_strAppFolder;
+-    if ("/" != strFolder) {
+-        strBaseFolder += "/";
+-        strBaseFolder += strFolder;
+-    }
+-
+     string strExePath = strBaseFolder + "/" + strBundleExe;
+     ZLog::PrintV(">>> SignFolder: %s, (%s)\n", ("/" == strFolder) ? ZUtil::GetBaseName(m_strAppFolder.c_str()) : strFolder.c_str(), strBundleExe.c_str());
+ 
+@@ -367,6 +393,7 @@ bool ZBundle::SignNode(jvalue& jvNode)
+         }
+     }
+ 
++    UseEntitlementsForFolder(strBaseFolder);
+     if (!macho.Sign(m_pSignAsset, bForceSign, strBundleId, strInfoSHA1, strInfoSHA256, strCodeResData)) {
+         return false;
+     }
+@@ -507,6 +534,7 @@ bool ZBundle::SignFolder(ZSignAsset* pSignAsset,
+     m_bForceSign = bForce;
+     m_pSignAsset = pSignAsset;
+     m_bWeakInject = bWeakInject;
++    m_strDefaultEntitlements = pSignAsset == NULL ? "" : pSignAsset->m_strEntitleData;
+     if (NULL == m_pSignAsset) {
+         return false;
+     }
+diff --git a/src/include/bundle.h b/src/include/bundle.h
+--- a/src/include/bundle.h
++++ b/src/include/bundle.h
+@@ -20,8 +20,10 @@ public:
+                     bool bWeakInject,
+                     bool bEnableCache);
++    void SetEntitlementMapping(const map<string, string>& entitlementMapping);
+ 
+ private:
+     bool SignNode(jvalue& jvNode);
++    void UseEntitlementsForFolder(const string& strFolder);
+     void GetNodeChangedFiles(jvalue& jvNode);
+     void GetChangedFiles(jvalue& jvNode, vector<string>& arrChangedFiles);
+     bool ModifyPluginsBundleId(const string& strOldBundleId, const string& strNewBundleId);
+@@ -42,6 +44,8 @@ private:
+     bool            m_bWeakInject;
+     ZSignAsset*     m_pSignAsset;
+     vector<string>  m_arrInjectDylibs;
++    map<string, string> m_entitlementMapping;
++    string          m_strDefaultEntitlements;
+ 
+ public:
+     string          m_strAppFolder;

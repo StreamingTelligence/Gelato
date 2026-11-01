@@ -1,0 +1,657 @@
+diff --git a/ffi/Cargo.toml b/ffi/Cargo.toml
+index 68d57ae..f41ca26 100644
+--- a/ffi/Cargo.toml
++++ b/ffi/Cargo.toml
+@@ -79,6 +79,7 @@ tss = ["idevice/tss"]
+ tunneld = ["idevice/tunneld"]
+ usbmuxd = ["idevice/usbmuxd", "dep:futures"]
+ wda = ["idevice/wda", "dep:serde_json"]
++xctest = ["idevice/xctest", "dvt", "installation_proxy", "afc"]
+ xpc = ["idevice/xpc"]
+ screenshotr = ["idevice/screenshotr"]
+ full = [
+@@ -127,6 +128,7 @@ full = [
+   "tunneld",
+   "usbmuxd",
+   "wda",
++  "xctest",
+   "xpc",
+ ]
+ default = ["full", "aws-lc"]
+diff --git a/idevice/Cargo.toml b/idevice/Cargo.toml
+index f360d53..51e164d 100644
+--- a/idevice/Cargo.toml
++++ b/idevice/Cargo.toml
+@@ -18,7 +18,7 @@ rustls = { version = "0.23", default-features = false, features = [
+   "tls12",
+ ], optional = true }
+ tokio-openssl = { version = "0.6", optional = true }
+-openssl = { version = "0.10", optional = true }
++openssl = { version = "0.10", optional = true, features = ["vendored"] }
+ 
+ plist = { version = "1.8" }
+ plist-macro = { version = "0.1.6" }
+diff --git a/ffi/src/lib.rs b/ffi/src/lib.rs
+index df526b0..b149688 100644
+--- a/ffi/src/lib.rs
++++ b/ffi/src/lib.rs
+@@ -80,6 +80,8 @@ pub mod util;
+ pub mod wda;
+ #[cfg(feature = "wda")]
+ pub mod wda_bridge;
++#[cfg(all(feature = "xctest", feature = "core_device_proxy", feature = "rsd"))]
++pub mod xctest_rsd;
+ 
+ pub use errors::*;
+ pub use pairing_file::*;
+diff --git a/ffi/src/xctest_rsd.rs b/ffi/src/xctest_rsd.rs
+new file mode 100644
+index 0000000..c96eb5e
+--- /dev/null
++++ b/ffi/src/xctest_rsd.rs
+@@ -0,0 +1,161 @@
++use std::{
++    ffi::{CStr, c_char},
++    path::PathBuf,
++    sync::{Arc, Mutex},
++};
++
++use idevice::{
++    IdeviceError, RsdService,
++    services::{
++        dvt::xctest::{
++            TestConfig, XCUITestService,
++            listener::XCUITestListener,
++        },
++        installation_proxy::InstallationProxyClient,
++    },
++    utils::installation::install_package_rsd,
++};
++
++use crate::{
++    IdeviceFfiError,
++    core_device_proxy::AdapterHandle,
++    ffi_err,
++    rsd::RsdHandshakeHandle,
++    run_sync,
++    run_sync_local,
++};
++
++pub struct XctestWdaRunHandle {
++    task: tokio::task::JoinHandle<()>,
++    error: Arc<Mutex<Option<String>>>,
++}
++
++struct NoopListener;
++impl XCUITestListener for NoopListener {}
++
++#[unsafe(no_mangle)]
++pub unsafe extern "C" fn xctest_wda_install_rsd(
++    adapter: *mut AdapterHandle,
++    handshake: *mut RsdHandshakeHandle,
++    package_path: *const c_char,
++) -> *mut IdeviceFfiError {
++    if adapter.is_null() || handshake.is_null() || package_path.is_null() {
++        return ffi_err!(IdeviceError::FfiInvalidArg);
++    }
++    let package_path = match unsafe { CStr::from_ptr(package_path) }.to_str() {
++        Ok(value) if !value.is_empty() => PathBuf::from(value),
++        _ => return ffi_err!(IdeviceError::FfiInvalidString),
++    };
++    let result = run_sync_local(async move {
++        let adapter = unsafe { &mut (*adapter).0 };
++        let handshake = unsafe { &mut (*handshake).0 };
++        install_package_rsd(adapter, handshake, package_path, None).await
++    });
++    match result {
++        Ok(()) => std::ptr::null_mut(),
++        Err(error) => ffi_err!(error),
++    }
++}
++
++#[unsafe(no_mangle)]
++pub unsafe extern "C" fn xctest_wda_start_rsd(
++    adapter: *mut AdapterHandle,
++    handshake: *mut RsdHandshakeHandle,
++    runner_bundle_id: *const c_char,
++    ios_major_version: u8,
++    out_handle: *mut *mut XctestWdaRunHandle,
++) -> *mut IdeviceFfiError {
++    if adapter.is_null()
++        || handshake.is_null()
++        || runner_bundle_id.is_null()
++        || out_handle.is_null()
++        || ios_major_version < 17
++    {
++        return ffi_err!(IdeviceError::FfiInvalidArg);
++    }
++    let bundle_id = match unsafe { CStr::from_ptr(runner_bundle_id) }.to_str() {
++        Ok(value) if !value.is_empty() => value.to_owned(),
++        _ => return ffi_err!(IdeviceError::FfiInvalidString),
++    };
++    let mut adapter = unsafe { (*adapter).0.clone() };
++    let mut handshake = unsafe { (*handshake).0.clone() };
++    let result = run_sync(async move {
++        let config = {
++            let mut installation_proxy =
++                InstallationProxyClient::connect_rsd(
++                    &mut adapter,
++                    &mut handshake,
++                )
++                .await?;
++            TestConfig::from_installation_proxy(
++                &mut installation_proxy,
++                &bundle_id,
++                None,
++            )
++            .await?
++        };
++        let run_error = Arc::new(Mutex::new(None));
++        let task_error = Arc::clone(&run_error);
++        let task = tokio::spawn(async move {
++            let mut listener = NoopListener;
++            let result = XCUITestService::run_with_existing_rsd(
++                config,
++                ios_major_version,
++                adapter,
++                handshake,
++                &mut listener,
++                None,
++            )
++            .await;
++            let detail = match result {
++                Ok(()) => "XCTest runner exited".to_owned(),
++                Err(error) => format!("XCTest runner failed: {error}"),
++            };
++            if let Ok(mut value) = task_error.lock() {
++                *value = Some(detail);
++            }
++        });
++        Ok::<_, IdeviceError>((task, run_error))
++    });
++    match result {
++        Ok((task, error)) => {
++            unsafe {
++                *out_handle = Box::into_raw(Box::new(
++                    XctestWdaRunHandle { task, error },
++                ));
++            }
++            std::ptr::null_mut()
++        }
++        Err(error) => ffi_err!(error),
++    }
++}
++
++#[unsafe(no_mangle)]
++pub unsafe extern "C" fn xctest_wda_run_error(
++    handle: *mut XctestWdaRunHandle,
++) -> *mut IdeviceFfiError {
++    if handle.is_null() {
++        return ffi_err!(IdeviceError::FfiInvalidArg);
++    }
++    match unsafe { (*handle).error.lock() } {
++        Ok(value) => match value.as_ref() {
++            Some(error) => ffi_err!(IdeviceError::UnknownErrorType(
++                error.clone()
++            )),
++            None => std::ptr::null_mut(),
++        },
++        Err(_) => ffi_err!(IdeviceError::UnknownErrorType(
++            "XCTest runner state lock poisoned".to_owned()
++        )),
++    }
++}
++
++#[unsafe(no_mangle)]
++pub unsafe extern "C" fn xctest_wda_run_free(
++    handle: *mut XctestWdaRunHandle,
++) {
++    if !handle.is_null() {
++        let handle = unsafe { Box::from_raw(handle) };
++        handle.task.abort();
++    }
++}
+diff --git a/idevice/src/services/dvt/xctest/mod.rs b/idevice/src/services/dvt/xctest/mod.rs
+index 32ec718..0075208 100644
+--- a/idevice/src/services/dvt/xctest/mod.rs
++++ b/idevice/src/services/dvt/xctest/mod.rs
+@@ -617,6 +617,42 @@ async fn connect_rsd_stack_once(
+     })
+ }
+ 
++async fn connect_existing_rsd_stack(
++    mut handle: crate::tcp::handle::AdapterHandle,
++    handshake: RsdHandshake,
++) -> Result<TestManagerConnections, IdeviceError> {
++    let dvt = rsd_connect(
++        &mut handle,
++        &handshake,
++        "com.apple.instruments.dtservicehub",
++        "dtservicehub",
++        true,
++    )
++    .await?;
++    let ctrl = rsd_connect(
++        &mut handle,
++        &handshake,
++        TESTMANAGERD_RSD_SERVICE,
++        "testmanagerd-ctrl",
++        false,
++    )
++    .await?;
++    let main = rsd_connect(
++        &mut handle,
++        &handshake,
++        TESTMANAGERD_RSD_SERVICE,
++        "testmanagerd-main",
++        false,
++    )
++    .await?;
++    Ok(TestManagerConnections {
++        ctrl,
++        main,
++        dvt,
++        rsd_handles: vec![handle],
++    })
++}
++
+ /// Establishes the three DTX connections for iOS 17+ via CoreDeviceProxy + RSD.
+ ///
+ /// Opens a software TCP tunnel through CoreDeviceProxy, does the RSD handshake
+@@ -2020,6 +2056,87 @@ impl XCUITestService {
+         Ok(())
+     }
+ 
++    /// Runs XCTest through an already established RemotePairing/RSD software
++    /// tunnel. This is intended for on-device VPN extensions where lockdown
++    /// is not reachable but CoreDevice's RSD services are.
++    pub async fn run_with_existing_rsd<L: XCUITestListener>(
++        cfg: TestConfig,
++        ios_major_version: u8,
++        adapter: crate::tcp::handle::AdapterHandle,
++        handshake: RsdHandshake,
++        listener: &mut L,
++        timeout: Option<std::time::Duration>,
++    ) -> Result<(), IdeviceError> {
++        let session_id = uuid::Uuid::new_v4();
++        let xctest_path = format!(
++            "/tmp/{}.xctestconfiguration",
++            session_id.to_string().to_uppercase()
++        );
++        let xctest_config = cfg.build_xctest_configuration(
++            session_id,
++            ios_major_version,
++        )?;
++        let mut conns = connect_existing_rsd_stack(adapter, handshake).await?;
++        let mut ctrl_proxy =
++            TestManagerProxy::open(&mut conns.ctrl, ios_major_version).await?;
++        let mut main_proxy =
++            TestManagerProxy::open(&mut conns.main, ios_major_version).await?;
++        let mut process_control =
++            XCTestProcessControlChannel::open(&mut conns.dvt).await?;
++
++        let config_name = cfg.config_name().to_owned();
++        initialize_testmanager_sessions(
++            &mut ctrl_proxy,
++            &mut main_proxy,
++            &xctest_config,
++        )
++        .await?;
++        register_early_driver_channel_handler(
++            &mut conns.main,
++            &xctest_config,
++        )
++        .await;
++        initialize_testmanager_daemon_sessions(
++            &mut ctrl_proxy,
++            &mut main_proxy,
++            ios_major_version,
++            &session_id,
++            &xctest_config,
++        )
++        .await?;
++
++        let (launch_args, launch_env, launch_options) = build_launch_env(
++            ios_major_version,
++            &session_id,
++            &cfg.runner_app_path,
++            &cfg.runner_app_container,
++            &config_name,
++            &xctest_path,
++            cfg.runner_env.as_ref(),
++            cfg.runner_args.as_deref(),
++        );
++        let _pid = launch_and_authorize_test_runner(
++            &mut ctrl_proxy,
++            &mut process_control,
++            ios_major_version,
++            &cfg.runner_bundle_id,
++            launch_args,
++            launch_env,
++            launch_options,
++        )
++        .await?;
++        let driver_channel =
++            start_test_plan_session(&mut conns.main, &mut main_proxy).await?;
++        run_dispatch_loop_until_done_or_disconnect(
++            &mut conns.main,
++            driver_channel,
++            &xctest_config,
++            listener,
++            timeout,
++        )
++        .await
++    }
++
+     /// Starts an XCTest runner intended to host WebDriverAgent and waits
+     /// until WDA responds on its device-side HTTP port.
+     ///
+diff --git a/ffi/src/tunnel_provider.rs b/ffi/src/tunnel_provider.rs
+index 3f9edd5..64bd9c6 100644
+--- a/ffi/src/tunnel_provider.rs
++++ b/ffi/src/tunnel_provider.rs
+@@ -9,6 +9,7 @@
+ //! - **Network via raw RPPairing** (Wi-Fi/LAN): `tunnel_create_rppairing`
+ 
+ use std::ffi::{CStr, c_char, c_void};
++use std::os::fd::AsRawFd;
+ use std::ptr::null_mut;
+ 
+ use idevice::RemoteXpcClient;
+@@ -29,6 +30,31 @@ struct PinCtx(*mut c_void);
+ unsafe impl Send for PinCtx {}
+ unsafe impl Sync for PinCtx {}
+ 
++async fn connect_bound_to_interface(
++    addr: std::net::SocketAddr,
++    interface_index: u32,
++) -> std::io::Result<tokio::net::TcpStream> {
++    if interface_index == 0 || !addr.is_ipv4() {
++        return tokio::net::TcpStream::connect(addr).await;
++    }
++    let socket = tokio::net::TcpSocket::new_v4()?;
++    let index = interface_index as libc::c_uint;
++    let result = unsafe {
++        libc::setsockopt(
++            socket.as_raw_fd(),
++            libc::IPPROTO_IP,
++            libc::IP_BOUND_IF,
++            &index as *const libc::c_uint as *const libc::c_void,
++            std::mem::size_of_val(&index) as libc::socklen_t,
++        )
++    };
++    if result != 0 {
++        return Err(std::io::Error::last_os_error());
++    }
++    socket.bind(std::net::SocketAddr::from(([10, 7, 0, 0], 0)))?;
++    socket.connect(addr).await
++}
++
+ /// Shared logic: given a connected & paired `RemotePairingClient`, create
+ /// the TLS-PSK tunnel and return adapter + handshake.
+ async fn finish_tunnel(
+@@ -36,16 +62,23 @@ async fn finish_tunnel(
+         impl idevice::remote_pairing::RpPairingSocketProvider,
+     >,
+     connect_addr: std::net::SocketAddr,
++    interface_index: u32,
+ ) -> Result<(idevice::tcp::handle::AdapterHandle, RsdHandshake), IdeviceError> {
+-    use idevice::remote_pairing::connect_tls_psk_tunnel_native;
++    use idevice::remote_pairing::connect_tls_psk_tunnel;
+ 
+     let tunnel_port = rpc.create_tcp_listener().await?;
+     let mut tunnel_addr = connect_addr;
+     tunnel_addr.set_port(tunnel_port);
+-    let tunnel_stream = run_global_timeout(|| tokio::net::TcpStream::connect(tunnel_addr))
++    let tunnel_stream = run_global_timeout(|| {
++        connect_bound_to_interface(tunnel_addr, interface_index)
++    })
+         .await
+         .map_err(|e| IdeviceError::InternalError(format!("TLS tunnel: {e}")))?;
+-    let tunnel = connect_tls_psk_tunnel_native(tunnel_stream, rpc.encryption_key()).await?;
++    let tunnel = run_global_timeout(|| {
++        connect_tls_psk_tunnel(tunnel_stream, rpc.encryption_key())
++    })
++    .await
++    .map_err(|e| IdeviceError::InternalError(format!("TLS-PSK handshake: {e}")))?;
+ 
+     let client_ip: std::net::IpAddr = tunnel
+         .info
+@@ -69,7 +102,13 @@ async fn finish_tunnel(
+         .connect(rsd_port)
+         .await
+-        .map_err(|e| IdeviceError::InternalError(format!("{e}")))?;
+-    let handshake = RsdHandshake::new(rsd_stream).await?;
++        .map_err(|e| {
++            IdeviceError::InternalError(format!(
++                "RSD TCP connect {client_ip}->{server_ip}:{rsd_port} mtu={mtu}: {e}"
++            ))
++        })?;
++    let handshake = run_global_timeout(|| RsdHandshake::new(rsd_stream))
++        .await
++        .map_err(|e| IdeviceError::InternalError(format!("RSD handshake: {e}")))?;
+ 
+     Ok((adapter, handshake))
+ }
+@@ -265,7 +304,7 @@ pub unsafe extern "C" fn tunnel_create_remotexpc(
+         rpc.connect(rpf, async || get_pin(pin_callback, &ctx))
+             .await?;
+ 
+-        finish_tunnel(&mut rpc, socket_addr).await
++        finish_tunnel(&mut rpc, socket_addr, 0).await
+     });
+ 
+     match res {
+@@ -292,6 +331,7 @@ pub unsafe extern "C" fn tunnel_create_remotexpc(
+ pub unsafe extern "C" fn tunnel_create_rppairing(
+     addr: *const idevice_sockaddr,
+     addr_len: idevice_socklen_t,
++    interface_index: u32,
+     hostname: *const c_char,
+     pairing_file: *mut RpPairingFileHandle,
+     pin_callback: Option<extern "C" fn(context: *mut c_void) -> *const c_char>,
+@@ -321,7 +361,9 @@ pub unsafe extern "C" fn tunnel_create_rppairing(
+ 
+     let res = run_sync_local(async {
+         // Connect directly and use raw RPPairing protocol
+-        let stream = run_global_timeout(|| tokio::net::TcpStream::connect(socket_addr))
++        let stream = run_global_timeout(|| {
++            connect_bound_to_interface(socket_addr, interface_index)
++        })
+             .await
+             .map_err(|e| IdeviceError::InternalError(format!("connect: {e}")))?;
+         let conn = RpPairingSocket::new(stream);
+@@ -330,7 +372,7 @@ pub unsafe extern "C" fn tunnel_create_rppairing(
+         rpc.connect(rpf, async || get_pin(pin_callback, &ctx))
+             .await?;
+ 
+-        finish_tunnel(&mut rpc, socket_addr).await
++        finish_tunnel(&mut rpc, socket_addr, interface_index).await
+     });
+ 
+     match res {
+diff --git a/idevice/src/remote_pairing/tls_psk.rs b/idevice/src/remote_pairing/tls_psk.rs
+index 9b7360c..039b753 100644
+--- a/idevice/src/remote_pairing/tls_psk.rs
++++ b/idevice/src/remote_pairing/tls_psk.rs
+@@ -319,9 +319,9 @@ async fn read_record<S: AsyncRead + Unpin>(stream: &mut S) -> Result<(u8, Vec<u8
+     Ok((ct, payload))
+ }
+ 
+-/// Extract handshake messages from a record payload.
+-/// A single record can contain multiple handshake messages.
+-fn parse_handshake_messages(data: &[u8]) -> Vec<(u8, Vec<u8>)> {
++/// Extract complete handshake messages while retaining a message that spans
++/// multiple TLS records for the next call.
++fn take_handshake_messages(data: &mut Vec<u8>) -> Vec<(u8, Vec<u8>)> {
+     let mut msgs = Vec::new();
+     let mut pos = 0;
+     while pos + 4 <= data.len() {
+@@ -333,6 +333,9 @@ fn parse_handshake_messages(data: &[u8]) -> Vec<(u8, Vec<u8>)> {
+         msgs.push((msg_type, data[pos..pos + 4 + msg_len].to_vec()));
+         pos += 4 + msg_len;
+     }
++    if pos > 0 {
++        data.drain(..pos);
++    }
+     msgs
+ }
+ 
+@@ -346,6 +349,7 @@ pub async fn tls_psk_handshake<S: AsyncRead + AsyncWrite + Unpin + Send>(
+     let mut server_random = [0u8; 32];
+     let mut selected_cipher = [0u8; 2];
+     let mut transcript = Vec::new();
++    let mut server_handshake_buffer = Vec::new();
+ 
+     // 1. ClientHello
+     let mut ch_body = Vec::new();
+@@ -391,42 +395,41 @@ pub async fn tls_psk_handshake<S: AsyncRead + AsyncWrite + Unpin + Send>(
+             )));
+         }
+         transcript.extend_from_slice(&payload);
++        server_handshake_buffer.extend_from_slice(&payload);
++        if server_handshake_buffer.len() > 4 * 1024 * 1024 {
++            return Err(IdeviceError::InternalError(
++                "TLS server handshake exceeded 4 MiB".into(),
++            ));
++        }
+ 
+-        for (msg_type, _msg_bytes) in parse_handshake_messages(&payload) {
++        let mut saw_server_hello_done = false;
++        for (msg_type, msg_bytes) in take_handshake_messages(&mut server_handshake_buffer) {
+             match msg_type {
+                 HS_SERVER_HELLO => {
+                     // ServerHello layout (after 4-byte handshake header):
+                     // 2 bytes version, 32 bytes random, 1 byte session_id_len,
+                     // session_id, 2 bytes cipher_suite
+-                    if payload.len() >= 4 + 2 + 32 {
+-                        server_random.copy_from_slice(&payload[6..38]);
+-                        let sid_len = payload[38] as usize;
+-                        if payload.len() >= 39 + sid_len + 2 {
++                    if msg_bytes.len() >= 4 + 2 + 32 + 1 {
++                        server_random.copy_from_slice(&msg_bytes[6..38]);
++                        let sid_len = msg_bytes[38] as usize;
++                        if msg_bytes.len() >= 39 + sid_len + 2 {
+                             selected_cipher
+-                                .copy_from_slice(&payload[39 + sid_len..39 + sid_len + 2]);
++                                .copy_from_slice(&msg_bytes[39 + sid_len..39 + sid_len + 2]);
+                         }
+                     }
+                     debug!("Got ServerHello, cipher={selected_cipher:02x?}");
+                 }
+                 HS_SERVER_HELLO_DONE => {
+                     debug!("Got ServerHelloDone");
++                    saw_server_hello_done = true;
+                 }
+                 _ => {
+                     debug!("Got handshake msg type {msg_type}");
+                 }
+             }
+         }
+-
+-        // Check if we've seen ServerHelloDone
+-        if payload.contains(&HS_SERVER_HELLO_DONE) && payload.len() >= 4 {
+-            // Simple check: if ServerHelloDone is in the payload, we're done
+-            // ServerHelloDone is a 0-length message: [0x0E, 0x00, 0x00, 0x00]
+-            if payload
+-                .windows(4)
+-                .any(|w| w == [HS_SERVER_HELLO_DONE, 0x00, 0x00, 0x00])
+-            {
+-                break;
+-            }
++        if saw_server_hello_done {
++            break;
+         }
+     }
+ 
+@@ -511,6 +514,7 @@ pub async fn tls_psk_handshake<S: AsyncRead + AsyncWrite + Unpin + Send>(
+         pending_record: Vec::new(),
+         pending_record_total: 0,
+         write_buf: Vec::new(),
++        pending_plaintext_len: 0,
+     })
+ }
+ 
+@@ -528,6 +532,9 @@ pub struct TlsPskStream<S> {
+     pending_record_total: usize,
+     /// Partial outbound TLS record waiting to be flushed
+     write_buf: Vec<u8>,
++    /// Plaintext bytes represented by `write_buf` but not yet reported as
++    /// accepted to the AsyncWrite caller.
++    pending_plaintext_len: usize,
+ }
+ 
+ impl<S> std::fmt::Debug for TlsPskStream<S> {
+@@ -662,38 +669,61 @@ impl<S: AsyncRead + AsyncWrite + Unpin + Send + Sync> AsyncWrite for TlsPskStrea
+         while !this.write_buf.is_empty() {
+             match Pin::new(&mut this.inner).poll_write(cx, &this.write_buf) {
+                 Poll::Ready(Ok(n)) => {
++                    if n == 0 {
++                        return Poll::Ready(Err(std::io::Error::new(
++                            std::io::ErrorKind::WriteZero,
++                            "failed to flush pending TLS record",
++                        )));
++                    }
+                     this.write_buf.drain(..n);
+                 }
+                 Poll::Ready(Err(e)) => return Poll::Ready(Err(e)),
+                 Poll::Pending => return Poll::Pending,
+             }
+         }
++        if this.pending_plaintext_len > 0 {
++            let accepted = std::mem::take(&mut this.pending_plaintext_len);
++            if data.len() < accepted {
++                return Poll::Ready(Err(std::io::Error::new(
++                    std::io::ErrorKind::InvalidInput,
++                    "AsyncWrite retry was shorter than pending TLS plaintext",
++                )));
++            }
++            return Poll::Ready(Ok(accepted));
++        }
+ 
+         // Clamp to TLS max record size to avoid oversized records
+         let chunk = &data[..data.len().min(TLS_MAX_PLAINTEXT)];
+ 
+         // Encrypt the new data into a TLS record
+         let encrypted = encrypt_record(&this.keys, this.write_seq, CT_APPLICATION_DATA, chunk);
+         let record = make_record(CT_APPLICATION_DATA, &encrypted);
+-        this.write_seq += 1;
+ 
+         match Pin::new(&mut this.inner).poll_write(cx, &record) {
+             Poll::Ready(Ok(written)) => {
++                if written == 0 {
++                    return Poll::Ready(Err(std::io::Error::new(
++                        std::io::ErrorKind::WriteZero,
++                        "failed to write TLS record",
++                    )));
++                }
++                this.write_seq += 1;
+                 if written < record.len() {
+-                    // Buffer the unsent remainder
++                    // The record is partially on the wire. Retain the rest and
++                    // defer reporting the plaintext as accepted until a later
++                    // poll has flushed the complete TLS record.
+                     this.write_buf.extend_from_slice(&record[written..]);
++                    this.pending_plaintext_len = chunk.len();
++                    cx.waker().wake_by_ref();
++                    return Poll::Pending;
+                 }
+                 Poll::Ready(Ok(chunk.len()))
+             }
+-            Poll::Ready(Err(e)) => {
+-                this.write_seq -= 1;
+-                Poll::Ready(Err(e))
+-            }
+-            Poll::Pending => {
+-                // Buffer the entire record for later flush
+-                this.write_buf = record;
+-                Poll::Pending
+-            }
++            Poll::Ready(Err(e)) => Poll::Ready(Err(e)),
++            // The underlying writer accepted no bytes. Do not retain the
++            // encrypted record or advance the sequence number: AsyncWrite
++            // callers will retry the same plaintext after wakeup.
++            Poll::Pending => Poll::Pending,
+         }
+     }
+ 

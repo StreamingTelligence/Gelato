@@ -1,0 +1,125 @@
+diff --git a/Sources/XToolSupport/SDKBuilder.swift b/Sources/XToolSupport/SDKBuilder.swift
+index 3f070e8..7415bc8 100644
+--- a/Sources/XToolSupport/SDKBuilder.swift
++++ b/Sources/XToolSupport/SDKBuilder.swift
+@@ -357,6 +357,11 @@ struct SDKBuilder {
+     // useful for computing progress % during fs traversal
+     private func extractXIP(inputPath: String, outDir: String) async throws -> Int {
++        struct FileIdentifier: Hashable, Sendable {
++            let device: Int
++            let inode: Int
++        }
++
+         let fd = try FileDescriptor.open(inputPath, .readOnly)
+         defer { try? fd.close() }
+ 
+@@ -373,11 +378,11 @@ struct SDKBuilder {
+ 
+         let inputStream = DataReader.data(readingFrom: fd.rawValue)
+ 
+-        let (observer, source) = inputStream.lockstepSplit()
++        let (scanObserver, scanSource) = inputStream.lockstepSplit()
+ 
+-        async let readTask: Void = {
++        async let scanReadTask: Void = {
+             var read = 0
+-            for try await chunk in observer {
++            for try await chunk in scanObserver {
+                 read += chunk.count
+                 let progress = Int(Double(read) / Double(length) * 100)
+-                print("\r[Extracting XIP] \(progress)%", terminator: "")
++                print("\r[Scanning XIP] \(progress)%", terminator: "")
+                 fflush(stdoutSafe)
+                 if read == length { break }
+             }
+@@ -385,7 +390,7 @@ struct SDKBuilder {
+         }()
+ 
+-        let xipToChunks = XIP.transform(
+-            DataReader(data: source),
++        let scanXIPToChunks = XIP.transform(
++            DataReader(data: scanSource),
+             options: nil
+         )
+ 
+@@ -396,25 +401,86 @@ struct SDKBuilder {
+         // with a double-pass system.
+ 
+-        let chunksToFiles = Chunks.transform(
+-            xipToChunks,
++        let scanChunksToFiles = Chunks.transform(
++            scanXIPToChunks,
+             options: nil
+         )
+ 
+-        let filesToDisk = Files.transform(
+-            chunksToFiles,
++        var wanted = 0
++        var wantedRegularFiles = Set<FileIdentifier>()
++        for try await file in scanChunksToFiles {
++            guard Self.isWanted(file.name[...]) else { continue }
++            wanted += 1
++            if file.type == .regular {
++                wantedRegularFiles.insert(.init(device: file.dev, inode: file.ino))
++            }
++        }
++        _ = try await scanReadTask
++        print()
++        let wantedRegularFileIdentifiers = wantedRegularFiles
++
++        try fd.seek(offset: 0, from: .start)
++        let extractionInputStream = DataReader.data(readingFrom: fd.rawValue)
++        let (observer, source) = extractionInputStream.lockstepSplit()
++
++        async let readTask: Void = {
++            var read = 0
++            for try await chunk in observer {
++                read += chunk.count
++                let progress = Int(Double(read) / Double(length) * 100)
++                print("\r[Extracting selected SDK files] \(progress)%", terminator: "")
++                fflush(stdoutSafe)
++                if read == length { break }
++            }
++        }()
++
++        let xipToChunks = XIP.transform(
++            DataReader(data: source),
++            options: nil
++        )
++        let chunksToFiles = Chunks.transform(
++            xipToChunks,
++            options: nil
++        )
++        let selectedFiles = chunksToFiles.filtering { file in
++            switch file.type {
++            case .directory:
++                true
++            case .symlink:
++                Self.isWanted(file.name[...])
++            case .regular:
++                wantedRegularFileIdentifiers.contains(
++                    .init(device: file.dev, inode: file.ino)
++                )
++            }
++        }
++        let filesToDisk = Files.transform(
++            selectedFiles,
+             options: .init(
+                 compress: false,
+                 dryRun: false
+@@ -424,14 +490,9 @@ struct SDKBuilder {
+             )
+         )
+ 
+-        var wanted = 0
+-        for try await file in filesToDisk {
+-            wanted += Self.isWanted(file.name[...]) ? 1 : 0
++        for try await _ in filesToDisk {
+         }
+         _ = try await readTask
+-
+         print()
+-
+         return wanted
+     }
+ 

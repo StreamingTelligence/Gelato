@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gelato:v1:reply",
+  "title": "Gelato v1 reply.deliver body",
+  "type": "object",
+  "required": ["text"],
+  "additionalProperties": false,
+  "properties": {
+    "text": { "type": "string", "minLength": 1, "maxLength": 32768, "pattern": "\\S" },
+    "inReplyTo": { "type": "string", "pattern": "^msg_[A-Za-z0-9_-]{10,80}$" },
+    "audio": {
+      "type": "object", "additionalProperties": false,
+      "required": ["streamId", "mimeType", "sampleRateHz", "channels", "sizeBytes", "sha256"],
+      "properties": {
+        "streamId": { "type": "string", "pattern": "^str_[A-Za-z0-9_-]{10,80}$" },
+        "mimeType": { "const": "audio/pcm" },
+        "sampleRateHz": { "const": 24000 },
+        "channels": { "const": 1 },
+        "sizeBytes": { "type": "integer", "minimum": 2, "maximum": 8388608 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}

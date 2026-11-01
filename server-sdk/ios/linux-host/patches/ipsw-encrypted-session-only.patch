@@ -1,0 +1,320 @@
+diff --git a/cmd/ipsw/cmd/download/download_dev.go b/cmd/ipsw/cmd/download/download_dev.go
+index 5e96140..c980212 100644
+--- a/cmd/ipsw/cmd/download/download_dev.go
++++ b/cmd/ipsw/cmd/download/download_dev.go
+@@ -192,20 +192,20 @@ var downloadDevCmd = &cobra.Command{
+ 		}
+ 
+ 		app := download.NewDevPortal(&download.DevConfig{
+-			Proxy:                     proxy,
+-			Insecure:                  insecure,
+-			SkipAll:                   skipAll,
+-			ResumeAll:                 resumeAll,
+-			RestartAll:                restartAll,
+-			RemoveCommas:              removeCommas,
+-			PreferSMS:                 sms,
+-			PageSize:                  pageSize,
+-			WatchList:                 watchList,
+-			ConfigDir:                 filepath.Join(home, ".ipsw"),
+-			VaultPassword:             viper.GetString("download.dev.vault-password"),
+-			Verbose:                   viper.GetBool("verbose"),
+-			AutomationInput:           automationInput,
+-			DisableSessionPersistence: credentialsStdin,
++			Proxy:                  proxy,
++			Insecure:               insecure,
++			SkipAll:                skipAll,
++			ResumeAll:              resumeAll,
++			RestartAll:             restartAll,
++			RemoveCommas:           removeCommas,
++			PreferSMS:              sms,
++			PageSize:               pageSize,
++			WatchList:              watchList,
++			ConfigDir:              filepath.Join(home, ".ipsw"),
++			VaultPassword:          viper.GetString("download.dev.vault-password"),
++			Verbose:                viper.GetBool("verbose"),
++			AutomationInput:        automationInput,
++			SessionOnlyPersistence: credentialsStdin,
+ 		})
+ 
+ 		if err := app.Init(); err != nil {
+diff --git a/internal/download/dev_portal.go b/internal/download/dev_portal.go
+index a777c73..eab3d0f 100644
+--- a/internal/download/dev_portal.go
++++ b/internal/download/dev_portal.go
+@@ -7,9 +7,15 @@ import (
+ 	"bytes"
+ 	"context"
+ 	"crypto"
++	"crypto/aes"
++	"crypto/cipher"
++	"crypto/rand"
+ 	"crypto/sha1"
++	"crypto/sha256"
++	"crypto/subtle"
+ 	"encoding/base64"
+ 	"encoding/binary"
++	"encoding/hex"
+ 	"encoding/json"
+ 	"fmt"
+ 	"io"
+@@ -36,6 +42,7 @@ import (
+ 	"github.com/blacktop/ipsw/internal/utils"
+ 	"github.com/dustin/go-humanize"
+ 	"github.com/pkg/errors"
++	"golang.org/x/crypto/scrypt"
+ )
+ 
+ /*
+@@ -85,9 +92,10 @@ const (
+ )
+ 
+ const (
+-	VaultName           = "ipsw-vault"
+-	AppName             = "io.blacktop.ipsw"
+-	KeychainServiceName = "ipsw-auth.service"
++	VaultName                 = "ipsw-vault"
++	AppName                   = "io.blacktop.ipsw"
++	KeychainServiceName       = "ipsw-auth.service"
++	automationSessionFilename = "automation-session.aesgcm"
+ )
+ 
+ type DevConfig struct {
+@@ -105,17 +113,17 @@ type DevConfig struct {
+ 	// download type config
+ 	WatchList []string
+ 	// behavior config
+-	SkipAll                   bool
+-	ResumeAll                 bool
+-	RestartAll                bool
+-	RemoveCommas              bool
+-	PreferSMS                 bool
+-	PageSize                  int
+-	Verbose                   bool
+-	VaultPassword             string
+-	ConfigDir                 string
+-	AutomationInput           *bufio.Reader
+-	DisableSessionPersistence bool
++	SkipAll                bool
++	ResumeAll              bool
++	RestartAll             bool
++	RemoveCommas           bool
++	PreferSMS              bool
++	PageSize               int
++	Verbose                bool
++	VaultPassword          string
++	ConfigDir              string
++	AutomationInput        *bufio.Reader
++	SessionOnlyPersistence bool
+ }
+ 
+ // DevPortal is the dev portal object
+@@ -444,7 +452,10 @@ func (dp *DevPortal) GetHashcash() string {
+ 
+ // Login to Apple
+ func (dp *DevPortal) Login(username, password string) error {
+-	if dp.config.DisableSessionPersistence {
++	if dp.config.SessionOnlyPersistence {
++		if err := dp.loadAutomationSession(username, password); err == nil {
++			return nil
++		}
+ 		if err := dp.getITCServiceKey(); err != nil {
+ 			return err
+ 		}
+@@ -933,10 +944,11 @@ func (dp *DevPortal) signIn(username, password string) error {
+ 		return fmt.Errorf("failed to sign in; expected status code 409 (for two factor auth): response received %s", response.Status)
+ 	}
+ 
+-	if !dp.config.DisableSessionPersistence {
+-		if err := dp.storeSession(); err != nil {
+-			return err
+-		}
++	if dp.config.SessionOnlyPersistence {
++		return dp.storeAutomationSession(username, password)
++	}
++	if err := dp.storeSession(); err != nil {
++		return err
+ 	}
+ 
+ 	return nil
+@@ -1232,6 +1244,181 @@ func (dp *DevPortal) storeSession() error {
+ 	return nil
+ }
+ 
++type encryptedAutomationSession struct {
++	AccountHash string  `json:"account_hash"`
++	Session     session `json:"session"`
++}
++
++func automationAccountHash(username string) string {
++	digest := sha256.Sum256([]byte(strings.ToLower(strings.TrimSpace(username))))
++	return hex.EncodeToString(digest[:])
++}
++
++func (dp *DevPortal) automationSessionPath() string {
++	return filepath.Join(dp.config.ConfigDir, automationSessionFilename)
++}
++
++func (dp *DevPortal) prepareAutomationSessionDirectory() error {
++	if err := os.MkdirAll(dp.config.ConfigDir, 0700); err != nil {
++		return fmt.Errorf("failed to create automation session directory: %v", err)
++	}
++	if err := os.Chmod(dp.config.ConfigDir, 0700); err != nil {
++		return fmt.Errorf("failed to secure automation session directory: %v", err)
++	}
++	return nil
++}
++
++func encryptAutomationSession(password string, plaintext []byte) ([]byte, error) {
++	salt := make([]byte, 16)
++	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
++		return nil, err
++	}
++	key, err := scrypt.Key([]byte(password), salt, 32768, 8, 1, 32)
++	if err != nil {
++		return nil, err
++	}
++	block, err := aes.NewCipher(key)
++	if err != nil {
++		return nil, err
++	}
++	var aead cipher.AEAD
++	aead, err = cipher.NewGCM(block)
++	if err != nil {
++		return nil, err
++	}
++	nonce := make([]byte, aead.NonceSize())
++	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
++		return nil, err
++	}
++	sealed := append([]byte("IPSWSES1"), salt...)
++	sealed = append(sealed, nonce...)
++	return aead.Seal(sealed, nonce, plaintext, nil), nil
++}
++
++func decryptAutomationSession(password string, sealed []byte) ([]byte, error) {
++	if len(sealed) < 24 || string(sealed[:8]) != "IPSWSES1" {
++		return nil, fmt.Errorf("encrypted automation session has an invalid header")
++	}
++	salt := sealed[8:24]
++	key, err := scrypt.Key([]byte(password), salt, 32768, 8, 1, 32)
++	if err != nil {
++		return nil, err
++	}
++	block, err := aes.NewCipher(key)
++	if err != nil {
++		return nil, err
++	}
++	aead, err := cipher.NewGCM(block)
++	if err != nil {
++		return nil, err
++	}
++	if len(sealed) < 24+aead.NonceSize() {
++		return nil, fmt.Errorf("encrypted automation session is truncated")
++	}
++	nonce := sealed[24 : 24+aead.NonceSize()]
++	ciphertext := sealed[24+aead.NonceSize():]
++	return aead.Open(nil, nonce, ciphertext, nil)
++}
++
++func (dp *DevPortal) storeAutomationSession(username, password string) error {
++	if err := dp.prepareAutomationSessionDirectory(); err != nil {
++		return err
++	}
++	payload, err := json.Marshal(encryptedAutomationSession{
++		AccountHash: automationAccountHash(username),
++		Session: session{
++			SessionID: dp.GetSessionID(),
++			SCNT:      dp.GetSCNT(),
++			WidgetKey: dp.GetWidgetKey(),
++			HashCash:  dp.GetHashcash(),
++			Cookies:   dp.Client.Jar.Cookies(&url.URL{Scheme: "https", Host: "idmsa.apple.com"}),
++		},
++	})
++	if err != nil {
++		return fmt.Errorf("failed to encode automation session: %v", err)
++	}
++	sealed, err := encryptAutomationSession(password, payload)
++	if err != nil {
++		return fmt.Errorf("failed to encrypt automation session: %v", err)
++	}
++	sessionPath := dp.automationSessionPath()
++	temporary, err := os.CreateTemp(dp.config.ConfigDir, ".automation-session-*")
++	if err != nil {
++		return fmt.Errorf("failed to create temporary automation session: %v", err)
++	}
++	temporaryPath := temporary.Name()
++	defer os.Remove(temporaryPath)
++	if err := temporary.Chmod(0600); err != nil {
++		temporary.Close()
++		return fmt.Errorf("failed to secure temporary automation session: %v", err)
++	}
++	if _, err := temporary.Write(sealed); err != nil {
++		temporary.Close()
++		return fmt.Errorf("failed to write automation session: %v", err)
++	}
++	if err := temporary.Sync(); err != nil {
++		temporary.Close()
++		return fmt.Errorf("failed to sync automation session: %v", err)
++	}
++	if err := temporary.Close(); err != nil {
++		return fmt.Errorf("failed to close automation session: %v", err)
++	}
++	if err := os.Rename(temporaryPath, sessionPath); err != nil {
++		return fmt.Errorf("failed to install automation session: %v", err)
++	}
++	return nil
++}
++
++func (dp *DevPortal) readAutomationSession(username, password string) (session, error) {
++	var result session
++	if err := dp.prepareAutomationSessionDirectory(); err != nil {
++		return result, err
++	}
++	sessionPath := dp.automationSessionPath()
++	info, err := os.Stat(sessionPath)
++	if err != nil || info.Mode().Perm() != 0600 {
++		return result, fmt.Errorf("automation session is missing or insecure")
++	}
++	sealed, err := os.ReadFile(sessionPath)
++	if err != nil {
++		return result, fmt.Errorf("failed to read automation session: %v", err)
++	}
++	plaintext, err := decryptAutomationSession(password, sealed)
++	if err != nil {
++		return result, fmt.Errorf("failed to decrypt automation session: %v", err)
++	}
++	var saved encryptedAutomationSession
++	if err := json.Unmarshal(plaintext, &saved); err != nil {
++		return result, fmt.Errorf("failed to decode automation session: %v", err)
++	}
++	expected := []byte(automationAccountHash(username))
++	actual := []byte(saved.AccountHash)
++	if len(expected) != len(actual) || subtle.ConstantTimeCompare(expected, actual) != 1 {
++		return result, fmt.Errorf("automation session belongs to another Apple ID")
++	}
++	if saved.Session.SessionID == "" || saved.Session.WidgetKey == "" || len(saved.Session.Cookies) == 0 {
++		return result, fmt.Errorf("automation session is incomplete")
++	}
++	return saved.Session, nil
++}
++
++func (dp *DevPortal) loadAutomationSession(username, password string) error {
++	saved, err := dp.readAutomationSession(username, password)
++	if err != nil {
++		return err
++	}
++	dp.config.SessionID = saved.SessionID
++	dp.config.SCNT = saved.SCNT
++	dp.config.WidgetKey = saved.WidgetKey
++	dp.config.HashCash = saved.HashCash
++	dp.Client.Jar.SetCookies(&url.URL{Scheme: "https", Host: "idmsa.apple.com"}, saved.Cookies)
++	if err := dp.getOlympusSession(); err != nil {
++		_ = os.Remove(dp.automationSessionPath())
++		return err
++	}
++	return nil
++}
++
+ func (dp *DevPortal) loadSession() error {
+ 	// get dev auth from vault
+ 	sess, err := dp.Vault.Get(VaultName)

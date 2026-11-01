@@ -1,0 +1,125 @@
+diff --git a/Sources/XToolSupport/AuthCommand.swift b/Sources/XToolSupport/AuthCommand.swift
+index 4c1f29a..af74594 100644
+--- a/Sources/XToolSupport/AuthCommand.swift
++++ b/Sources/XToolSupport/AuthCommand.swift
+@@ -22,6 +22,7 @@ struct AuthOperation {
+ 
+     var mode: AuthMode?
+     var quiet = false
++    var preferPaidTeam = false
+ 
+     func run() async throws {
+         if let token = try? AuthToken.saved(), !logoutFromExisting {
+@@ -51,7 +52,9 @@ struct AuthOperation {
+         }
+         try token.save()
+ 
+-        print("Logged in.\n\(token)")
++        if !quiet {
++            print("Logged in.\n\(token)")
++        }
+     }
+ 
+     private func logInWithKey() async throws -> AuthToken {
+@@ -97,14 +100,29 @@ struct AuthOperation {
+ 
+         let client = DeveloperServicesClient(loginToken: token)
+         let teams = try await client.send(DeveloperServicesListTeamsRequest())
+-        let team = try await Console.choose(
+-            from: teams,
+-            onNoElement: {
+-                throw Console.Error("No development teams found")
+-            },
+-            multiPrompt: "\nSelect a team",
+-            formatter: {
+-                "\($0.name) (\($0.id.rawValue))"
++        let team: DeveloperServicesTeam
++        if preferPaidTeam {
++            let paidTeams = teams.filter {
++                !$0.isFree && $0.status.lowercased() == "active"
+             }
+-        )
++            guard paidTeams.count == 1, let paidTeam = paidTeams.first else {
++                throw Console.Error(
++                    paidTeams.isEmpty
++                        ? "No active paid Apple Developer team was found"
++                        : "More than one active paid Apple Developer team was found"
++                )
++            }
++            team = paidTeam
++            if !quiet {
++                print("Using the active paid Apple Developer team: \(team.name)")
++            }
++        } else {
++            team = try await Console.choose(
++                from: teams,
++                onNoElement: {
++                    throw Console.Error("No development teams found")
++                },
++                multiPrompt: "\nSelect a team",
++                formatter: {
++                    "\($0.name) (\($0.id.rawValue))"
++                }
++            )
++        }
+ 
+         return AuthToken.xcode(.init(
+             appleID: username,
+@@ -132,12 +150,54 @@ struct AuthLoginCommand: AsyncParsableCommand {
+     @Option(name: [.short, .long]) var password: String?
+     @Option(name: [.short, .long]) var mode: AuthMode?
+ 
++    @Flag(
++        help: "Select the only active paid Apple Developer team without an interactive team prompt"
++    )
++    var preferPaidTeam = false
++
++    @Flag(
++        help: "Read one JSON object containing username and password from standard input"
++    )
++    var credentialsStdin = false
++
++    @Flag(help: "Suppress account, team, and authentication token details")
++    var quiet = false
++
+     func run() async throws {
+-        try await AuthOperation(
+-            username: username,
+-            password: password,
++        var loginUsername = username
++        var loginPassword = password
++        if credentialsStdin {
++            guard username == nil, password == nil else {
++                throw Console.Error(
++                    "--credentials-stdin cannot be combined with --username or --password"
++                )
++            }
++            guard mode != .key else {
++                throw Console.Error("--credentials-stdin requires password authentication")
++            }
++            guard let line = readLine(),
++                  let data = line.data(using: .utf8),
++                  let credentials = try? JSONSerialization.jsonObject(with: data) as? [String: String],
++                  let inputUsername = credentials["username"],
++                  let inputPassword = credentials["password"],
++                  !inputUsername.isEmpty,
++                  !inputPassword.isEmpty else {
++                throw Console.Error("Invalid credentials JSON on standard input")
++            }
++            loginUsername = inputUsername
++            loginPassword = inputPassword
++        }
++
++        var operation = AuthOperation(
++            username: loginUsername,
++            password: loginPassword,
+             logoutFromExisting: true,
+             mode: mode
+-        ).run()
++        )
++        operation.preferPaidTeam = preferPaidTeam
++        operation.quiet = quiet
++        try await operation.run()
+     }
+ }
+ 

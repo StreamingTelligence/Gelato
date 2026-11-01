@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gelato:v1:command",
+  "title": "Gelato v1 device command",
+  "type": "object",
+  "required": [
+    "commandId",
+    "capability",
+    "capabilityVersion",
+    "arguments",
+    "deadline",
+    "idempotency"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "commandId": {
+      "type": "string",
+      "pattern": "^cmd_[A-Za-z0-9_-]{10,80}$"
+    },
+    "capability": {
+      "type": "string"
+    },
+    "capabilityVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "arguments": {
+      "type": "object"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "idempotency": {
+      "enum": [
+        "read-only",
+        "idempotent",
+        "side-effecting"
+      ]
+    },
+    "consentRef": {
+      "type": "string"
+    }
+  }
+}

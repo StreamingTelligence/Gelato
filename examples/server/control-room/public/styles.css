@@ -1,0 +1,314 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #eef2f7;
+  color: #0f172a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+}
+
+.sidebar {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 18px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.brand-title { display: flex; align-items: center; gap: 9px; min-width: 0; }
+
+.brand-title img { width: 42px; height: 42px; padding: 4px; object-fit: contain; background: #fff; border-radius: 9px; }
+
+.brand h1,
+.toolbar h2 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.brand h1 {
+  font-size: 22px;
+}
+
+.brand span,
+.device-card small,
+#deviceMeta {
+  color: #94a3b8;
+}
+
+.device-list {
+  display: grid;
+  gap: 8px;
+}
+
+.incoming-pairing { margin: 22px 0; }
+.incoming-pairing h2 { margin: 0 0 8px; font-size: 16px; }
+.incoming-pairing p { color: #94a3b8; font-size: 12px; }
+.pairing-request-list { display: grid; gap: 8px; }
+.pairing-request-card { padding: 10px; border: 1px solid #334155; border-radius: 8px; background: #1e293b; }
+.pairing-request-card strong, .pairing-request-card small { display: block; overflow-wrap: anywhere; }
+.pairing-request-card small { color: #94a3b8; margin-top: 4px; }
+.pairing-request-actions { display: flex; gap: 8px; margin-top: 10px; }
+.pairing-request-actions button { flex: 1; }
+#pairingRequestError { color: #fca5a5; }
+
+.device-card {
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.device-card.selected {
+  border-color: #38bdf8;
+  background: #164e63;
+}
+
+.device-card strong,
+.device-card small {
+  display: block;
+}
+
+.workspace {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.toolbar {
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 22px;
+  background: #ffffff;
+  border-bottom: 1px solid #dbe3ee;
+}
+
+.toolbar h2 {
+  font-size: 20px;
+}
+
+.toolbar p {
+  margin: 4px 0 0;
+}
+
+.status-strip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-strip span {
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+}
+
+.control-surface {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  padding: 18px;
+}
+
+.screen-pane {
+  min-height: 420px;
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+video,
+#screenImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #111827;
+}
+
+#screenImage[hidden],
+#screenVideo[hidden] { display: none; }
+
+dialog {
+  width: min(92vw, 380px);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0;
+  box-shadow: 0 20px 50px rgb(15 23 42 / 30%);
+}
+
+dialog::backdrop {
+  background: rgb(15 23 42 / 60%);
+}
+
+#authForm {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+}
+
+#authForm h2,
+#authForm p {
+  margin: 0;
+}
+
+#authError {
+  min-height: 20px;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.controls {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.grid {
+  display: grid;
+  gap: 8px;
+}
+
+.grid.two {
+  grid-template-columns: 1fr 1fr;
+}
+
+label {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  color: #475569;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 9px 10px;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+
+button {
+  border: 1px solid #0284c7;
+  background: #0ea5e9;
+  color: #ffffff;
+  border-radius: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0284c7;
+}
+
+pre {
+  min-height: 160px;
+  max-height: 280px;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0f172a;
+  white-space: pre-wrap;
+}
+
+.pairing-controls {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.pairing-controls label,
+.pairing-controls a,
+.pairing-controls p {
+  color: #e2e8f0;
+}
+
+.pairing-controls p {
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
+}
+
+#pairCode {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+#pairUrl {
+  font-size: 12px;
+}
+
+#pairLink {
+  display: inline-block;
+  margin-top: 8px;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid #0284c7;
+  outline-offset: 3px;
+}
+
+@media (max-width: 960px) {
+  .shell,
+  .control-surface {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    min-height: auto;
+  }
+}

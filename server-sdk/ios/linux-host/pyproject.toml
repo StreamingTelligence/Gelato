@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "galatea-ios-linux-host"
+version = "0.1.0"
+description = "Linux packet-overlay and iOS 27 Device Hub pairing host"
+requires-python = ">=3.13"
+dependencies = [
+    "aiohttp>=3.10,<4",
+    "construct-typing>=0.8,<0.9",
+    "pymobiledevice3==11.49.0",
+    "websockets>=13,<17",
+]
+
+[project.scripts]
+galatea-ios-host = "galatea_ios_host.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

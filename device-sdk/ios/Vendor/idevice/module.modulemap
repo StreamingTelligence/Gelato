@@ -1,0 +1,4 @@
+module idevice {
+  header "idevice.h"
+  export *
+}

@@ -1,0 +1,45 @@
+diff --git a/unxip.swift b/unxip.swift
+index 0324cf2..c6aa3ff 100644
+--- a/unxip.swift
++++ b/unxip.swift
+@@ -148,10 +148,39 @@ public struct ErasedSequence<Element>: AsyncSequence {
+ 	let iterator: any ErasedIterator<Element>
+ 
+-	init<S: AsyncSequence>(sequence: S) where S.Element == Element, S.AsyncIterator: Sendable {
++	public init<S: AsyncSequence>(sequence: S) where S.Element == Element, S.AsyncIterator: Sendable {
+ 		iterator = ErasedButBarelyLikeWithThosePinkPearlThingsSequence(sequence: sequence).makeAsyncIterator()
+ 	}
+ 
+ 	public func makeAsyncIterator() -> Iterator<Element> {
+ 		.init(iterator: iterator)
+ 	}
++
++	private struct FilteringSequence: AsyncSequence {
++		struct Iterator: AsyncIteratorProtocol, Sendable {
++			var iterator: ErasedSequence<Element>.Iterator<Element>
++			let isIncluded: @Sendable (Element) -> Bool
++
++			mutating func next() async throws -> Element? {
++				while let element = try await iterator.next() {
++					if isIncluded(element) {
++						return element
++					}
++				}
++				return nil
++			}
++		}
++
++		let sequence: ErasedSequence<Element>
++		let isIncluded: @Sendable (Element) -> Bool
++
++		func makeAsyncIterator() -> Iterator {
++			.init(iterator: sequence.makeAsyncIterator(), isIncluded: isIncluded)
++		}
++	}
++
++	public func filtering(
++		_ isIncluded: @escaping @Sendable (Element) -> Bool
++	) -> ErasedSequence<Element> {
++		.init(sequence: FilteringSequence(sequence: self, isIncluded: isIncluded))
++	}
+ }

@@ -1,0 +1,52 @@
+diff --git a/Sources/XToolSupport/DSCommands/DSDevicesCommand.swift b/Sources/XToolSupport/DSCommands/DSDevicesCommand.swift
+index 7306f44..cf55d45 100644
+--- a/Sources/XToolSupport/DSCommands/DSDevicesCommand.swift
++++ b/Sources/XToolSupport/DSCommands/DSDevicesCommand.swift
+@@ -8,10 +8,46 @@ struct DSDevicesCommand: AsyncParsableCommand {
+         abstract: "Interact with devices",
+         subcommands: [
+             DSDevicesListCommand.self,
++            DSDevicesAddCommand.self,
+         ],
+         defaultSubcommand: DSDevicesListCommand.self
+     )
+ }
+ 
++struct DSDevicesAddCommand: AsyncParsableCommand {
++    static let configuration = CommandConfiguration(
++        commandName: "add",
++        abstract: "Register a network-enrolled iOS device"
++    )
++
++    @Option(help: "Device UDID obtained through network enrollment")
++    var udid: String
++
++    @Option(help: "Display name for the registered device")
++    var name: String
++
++    func run() async throws {
++        let client = DeveloperAPIClient(auth: try AuthToken.saved().authData())
++        let response = try await client.devicesCreateInstance(
++            body: .json(.init(data: .init(
++                _type: .devices,
++                attributes: .init(
++                    name: name,
++                    platform: .init(.ios),
++                    udid: udid
++                )
++            )))
++        )
++
++        if (try? response.conflict) != nil {
++            print("Device is already registered")
++            return
++        }
++
++        _ = try response.created
++        print("Device registered")
++    }
++}
++
+ struct DSDevicesListCommand: AsyncParsableCommand {
+     static let configuration = CommandConfiguration(
+         commandName: "list",

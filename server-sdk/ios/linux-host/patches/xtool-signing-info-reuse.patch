@@ -1,0 +1,66 @@
+diff --git a/Sources/XKit/DeveloperServices/Certificates/DeveloperServicesFetchCertificateOperation.swift b/Sources/XKit/DeveloperServices/Certificates/DeveloperServicesFetchCertificateOperation.swift
+--- a/Sources/XKit/DeveloperServices/Certificates/DeveloperServicesFetchCertificateOperation.swift
++++ b/Sources/XKit/DeveloperServices/Certificates/DeveloperServicesFetchCertificateOperation.swift
+@@ -44,6 +44,11 @@ public struct DeveloperServicesFetchCertificateOperation: DeveloperServicesOper
+         self.confirmRevocation = confirmRevocation
+     }
+ 
++    static func normalizedSerialNumber(_ serialNumber: String) -> String {
++        let normalized = serialNumber.uppercased().drop(while: { $0 == "0" })
++        return normalized.isEmpty ? "0" : String(normalized)
++    }
++
+     private func createCertificate() async throws -> SigningInfo {
+         let keypair = try Keypair()
+         let csr = try keypair.generateCSR()
+@@ -89,19 +94,22 @@ public struct DeveloperServicesFetchCertificateOperation: DeveloperServicesOper
+             }
+         }
+         let signingInfo = try await createCertificate()
+-        signingInfoManager[self.context.auth.identityID] = signingInfo
++        try signingInfoManager.setInfo(signingInfo, forIdentityID: self.context.auth.identityID)
+         return signingInfo
+     }
+ 
+     public func perform() async throws -> SigningInfo {
+         let certificates = try await context.developerAPIClient.certificatesGetCollection().ok.body.json.data
+ 
+-        guard let signingInfo = signingInfoManager[self.context.auth.identityID] else {
++        guard let signingInfo = try signingInfoManager.info(forIdentityID: self.context.auth.identityID) else {
+             return try await self.replaceCertificates(certificates, requireConfirmation: true)
+         }
+ 
+-        let knownSerialNumber = signingInfo.certificate.serialNumber()
+-        guard let certificate = certificates.first(where: { $0.attributes?.serialNumber == knownSerialNumber }) else {
++        let knownSerialNumber = Self.normalizedSerialNumber(signingInfo.certificate.serialNumber())
++        guard let certificate = certificates.first(where: {
++            guard let serialNumber = $0.attributes?.serialNumber else { return false }
++            return Self.normalizedSerialNumber(serialNumber) == knownSerialNumber
++        }) else {
+             // we need to revoke existing certs, otherwise it doesn't always let us make a new one
+             return try await self.replaceCertificates(certificates, requireConfirmation: true)
+         }
+diff --git a/Sources/XKit/Utilities/KeyValueStorage.swift b/Sources/XKit/Utilities/KeyValueStorage.swift
+--- a/Sources/XKit/Utilities/KeyValueStorage.swift
++++ b/Sources/XKit/Utilities/KeyValueStorage.swift
+@@ -100,10 +100,18 @@ public struct DirectoryStorage: KeyValueStorage {
+     public func setData(_ data: Data?, forKey key: String) throws {
+         let url = url(for: key)
+         if !FileManager.default.fileExists(atPath: url.deletingLastPathComponent().path) {
+-            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
++            try FileManager.default.createDirectory(
++                at: url.deletingLastPathComponent(),
++                withIntermediateDirectories: true,
++                attributes: [.posixPermissions: 0o700]
++            )
+         }
++        try FileManager.default.setAttributes(
++            [.posixPermissions: 0o700], ofItemAtPath: url.deletingLastPathComponent().path
++        )
+         if let data = data {
+-            try data.write(to: url)
++            try data.write(to: url, options: .atomic)
++            try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
+         } else {
+             try FileManager.default.removeItem(at: url)
+         }

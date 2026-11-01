@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gelato:v1:observation",
+  "title": "Galatea decoded image or explicitly typed coded chunk",
+  "type": "object",
+  "required": [
+    "frame_ref",
+    "device_id",
+    "stream_id",
+    "sequence",
+    "captured_at_s",
+    "source_time_s",
+    "received_at_s",
+    "available_at_s",
+    "mime_type",
+    "sha256",
+    "data_base64"
+  ],
+  "properties": {
+    "frame_ref": {
+      "type": "string",
+      "pattern": "^obs_[a-f0-9]{64}$"
+    },
+    "device_id": {
+      "type": "string",
+      "pattern": "^dev_"
+    },
+    "stream_id": {
+      "type": "string",
+      "pattern": "^str_"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "captured_at_s": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "source_time_s": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "received_at_s": {
+      "type": "number"
+    },
+    "available_at_s": {
+      "type": "number"
+    },
+    "mime_type": {
+      "enum": [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "video/h264"
+      ]
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "data_base64": {
+      "type": "string"
+    }
+  }
+}

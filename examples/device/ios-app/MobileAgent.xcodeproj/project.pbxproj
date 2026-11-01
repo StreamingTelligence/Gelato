@@ -1,0 +1,900 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AD2026090800000000000011 /* DeviceAppSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD2026090800000000000012; };
+		AD2026090800000000000001 /* DeviceAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD2026090800000000000002; };
+		AD2026090800000000000003 /* public in Resources */ = {isa = PBXBuildFile; fileRef = AD2026090800000000000004; };
+		F01E20261024000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F01E20261024000000000002; };
+		AD2026090800000000000005 /* Capacitor in Frameworks */ = {isa = PBXBuildFile; productRef = AD2026090800000000000007; };
+		AD2026090800000000000006 /* Cordova in Frameworks */ = {isa = PBXBuildFile; productRef = AD2026090800000000000008; };
+		0D7B2D4C2D2A4F3A9E1A0001 /* MobileAgentApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7B2D4B2D2A4F3A9E1A0001 /* MobileAgentApp.swift */; };
+		0D7B2D4C2D2A4F3A9E1A0010 /* WirelessPairingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7B2D4B2D2A4F3A9E1A0010 /* WirelessPairingCoordinator.swift */; };
+		0D7B2D4C2D2A4F3A9E1A0011 /* MainAppRemoteXPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7B2D4B2D2A4F3A9E1A0011 /* MainAppRemoteXPCBridge.swift */; };
+		0D7B2D602D2A4F3A9E1A0003 /* BroadcastSampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7B2D622D2A4F3A9E1A0003 /* BroadcastSampleHandler.swift */; };
+		0D7B2D612D2A4F3A9E1A0003 /* ScreenBroadcast.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 0D7B2D642D2A4F3A9E1A0003 /* ScreenBroadcast.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0D7B2D702D2A4F3A9E1A0004 /* BroadcastSetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D7B2D722D2A4F3A9E1A0004 /* BroadcastSetupViewController.swift */; };
+		0D7B2D712D2A4F3A9E1A0004 /* ScreenBroadcastSetupUI.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 0D7B2D742D2A4F3A9E1A0004 /* ScreenBroadcastSetupUI.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		14B9E31F20144211416693D8 /* PacketTunnel.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AAC9616E131073C0CDD44F73 /* PacketTunnel.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		230D53C5B00A75A54626C76E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE27E9C1364DF653C655836A /* Foundation.framework */; };
+		5FA25F165DCE7A05D3C2EAFC /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA66FD796A675AAF890EF7C /* PacketTunnelProvider.swift */; };
+		5FA25F165DCE7A05D3C2EB00 /* OnDeviceRemoteXPCBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA66FD796A675AAF890EF80 /* OnDeviceRemoteXPCBridge.swift */; };
+		5FA25F165DCE7A05D3C2EB01 /* LocalDevVPNPacketRecycler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA66FD796A675AAF890EF81 /* LocalDevVPNPacketRecycler.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0D7B2D6B2D2A4F3A9E1A0003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0D7B2D412D2A4F3A9E1A0001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0D7B2D672D2A4F3A9E1A0003;
+			remoteInfo = ScreenBroadcast;
+		};
+		0D7B2D7B2D2A4F3A9E1A0004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0D7B2D412D2A4F3A9E1A0001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0D7B2D772D2A4F3A9E1A0004;
+			remoteInfo = ScreenBroadcastSetup;
+		};
+		E77CC78EFCF24BB0B0888BDD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0D7B2D412D2A4F3A9E1A0001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7953DEA9DAF6FE20498FC61B;
+			remoteInfo = PacketTunnel;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0D7B2D692D2A4F3A9E1A0003 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				0D7B2D612D2A4F3A9E1A0003 /* ScreenBroadcast.appex in Embed App Extensions */,
+				0D7B2D712D2A4F3A9E1A0004 /* ScreenBroadcastSetupUI.appex in Embed App Extensions */,
+				14B9E31F20144211416693D8 /* PacketTunnel.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		AD2026090800000000000012 /* DeviceAppSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAppSetup.swift; sourceTree = "<group>"; };
+		AD2026090800000000000002 /* DeviceAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAppView.swift; sourceTree = "<group>"; };
+		AD2026090800000000000004 /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		F01E20261024000000000002 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		015A0908BD4C5EAA3C3FB0BA /* PacketTunnel.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = PacketTunnel.entitlements; sourceTree = "<group>"; };
+		0D7B2D4B2D2A4F3A9E1A0001 /* MobileAgentApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileAgentApp.swift; sourceTree = "<group>"; };
+		0D7B2D4B2D2A4F3A9E1A0010 /* WirelessPairingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WirelessPairingCoordinator.swift; sourceTree = "<group>"; };
+		0D7B2D4B2D2A4F3A9E1A0011 /* MainAppRemoteXPCBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppRemoteXPCBridge.swift; sourceTree = "<group>"; };
+		0D7B2D4D2D2A4F3A9E1A0001 /* MobileAgent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileAgent.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0D7B2D4F2D2A4F3A9E1A0002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0D7B2D622D2A4F3A9E1A0003 /* BroadcastSampleHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BroadcastSampleHandler.swift; sourceTree = "<group>"; };
+		0D7B2D632D2A4F3A9E1A0003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0D7B2D642D2A4F3A9E1A0003 /* ScreenBroadcast.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ScreenBroadcast.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		0D7B2D722D2A4F3A9E1A0004 /* BroadcastSetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BroadcastSetupViewController.swift; sourceTree = "<group>"; };
+		0D7B2D732D2A4F3A9E1A0004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0D7B2D742D2A4F3A9E1A0004 /* ScreenBroadcastSetupUI.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ScreenBroadcastSetupUI.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E007E45AE533A7A1F977DF1 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3EA66FD796A675AAF890EF7C /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
+		3EA66FD796A675AAF890EF80 /* OnDeviceRemoteXPCBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnDeviceRemoteXPCBridge.swift; sourceTree = "<group>"; };
+		3EA66FD796A675AAF890EF81 /* LocalDevVPNPacketRecycler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalDevVPNPacketRecycler.swift; sourceTree = "<group>"; };
+		AAC9616E131073C0CDD44F73 /* PacketTunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE27E9C1364DF653C655836A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0D7B2D452D2A4F3A9E1A0001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AD2026090800000000000005 /* Capacitor in Frameworks */,
+				AD2026090800000000000006 /* Cordova in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0D7B2D652D2A4F3A9E1A0003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0D7B2D752D2A4F3A9E1A0004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DB0F2EDA19AF323C90B7420D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				230D53C5B00A75A54626C76E /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0D7B2D402D2A4F3A9E1A0001 = {
+			isa = PBXGroup;
+			children = (
+				0D7B2D492D2A4F3A9E1A0001 /* MobileAgent */,
+				0D7B2D662D2A4F3A9E1A0003 /* ScreenBroadcast */,
+				0D7B2D762D2A4F3A9E1A0004 /* ScreenBroadcastSetup */,
+				0D7B2D4E2D2A4F3A9E1A0001 /* Products */,
+				B682DD1F0B22D620CF764642 /* PacketTunnel */,
+				61EAF60442A910E8FCF0B83B /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		0D7B2D492D2A4F3A9E1A0001 /* MobileAgent */ = {
+			isa = PBXGroup;
+			children = (
+				AD2026090800000000000002 /* DeviceAppView.swift */,
+				AD2026090800000000000012 /* DeviceAppSetup.swift */,
+				AD2026090800000000000004 /* public */,
+				F01E20261024000000000002 /* Assets.xcassets */,
+				0D7B2D4B2D2A4F3A9E1A0001 /* MobileAgentApp.swift */,
+				0D7B2D4B2D2A4F3A9E1A0010 /* WirelessPairingCoordinator.swift */,
+				0D7B2D4B2D2A4F3A9E1A0011 /* MainAppRemoteXPCBridge.swift */,
+				0D7B2D4F2D2A4F3A9E1A0002 /* Info.plist */,
+			);
+			path = "../../../device-sdk/ios/MobileAgent";
+			sourceTree = "<group>";
+		};
+		0D7B2D4E2D2A4F3A9E1A0001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0D7B2D4D2D2A4F3A9E1A0001 /* MobileAgent.app */,
+				0D7B2D642D2A4F3A9E1A0003 /* ScreenBroadcast.appex */,
+				0D7B2D742D2A4F3A9E1A0004 /* ScreenBroadcastSetupUI.appex */,
+				AAC9616E131073C0CDD44F73 /* PacketTunnel.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0D7B2D662D2A4F3A9E1A0003 /* ScreenBroadcast */ = {
+			isa = PBXGroup;
+			children = (
+				0D7B2D622D2A4F3A9E1A0003 /* BroadcastSampleHandler.swift */,
+				0D7B2D632D2A4F3A9E1A0003 /* Info.plist */,
+			);
+			path = "../../../device-sdk/ios/ScreenBroadcast";
+			sourceTree = "<group>";
+		};
+		0D7B2D762D2A4F3A9E1A0004 /* ScreenBroadcastSetup */ = {
+			isa = PBXGroup;
+			children = (
+				0D7B2D722D2A4F3A9E1A0004 /* BroadcastSetupViewController.swift */,
+				0D7B2D732D2A4F3A9E1A0004 /* Info.plist */,
+			);
+			path = "../../../device-sdk/ios/ScreenBroadcastSetup";
+			sourceTree = "<group>";
+		};
+		61EAF60442A910E8FCF0B83B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				EFF20705ABB01982CEC0A9BA /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+			B682DD1F0B22D620CF764642 /* PacketTunnel */ = {
+				isa = PBXGroup;
+				children = (
+					3EA66FD796A675AAF890EF7C /* PacketTunnelProvider.swift */,
+					3EA66FD796A675AAF890EF81 /* LocalDevVPNPacketRecycler.swift */,
+					3EA66FD796A675AAF890EF80 /* OnDeviceRemoteXPCBridge.swift */,
+					2E007E45AE533A7A1F977DF1 /* Info.plist */,
+					015A0908BD4C5EAA3C3FB0BA /* PacketTunnel.entitlements */,
+				);
+				name = PacketTunnel;
+				path = "../../../device-sdk/ios/PacketTunnel";
+				sourceTree = "<group>";
+			};
+		EFF20705ABB01982CEC0A9BA /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				AE27E9C1364DF653C655836A /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0D7B2D462D2A4F3A9E1A0001 /* MobileAgent */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0D7B2D562D2A4F3A9E1A0001 /* Build configuration list for PBXNativeTarget "MobileAgent" */;
+			buildPhases = (
+				0D7B2D442D2A4F3A9E1A0001 /* Sources */,
+				0D7B2D452D2A4F3A9E1A0001 /* Frameworks */,
+				0D7B2D432D2A4F3A9E1A0001 /* Resources */,
+				0D7B2D692D2A4F3A9E1A0003 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0D7B2D6A2D2A4F3A9E1A0003 /* PBXTargetDependency */,
+				0D7B2D7A2D2A4F3A9E1A0004 /* PBXTargetDependency */,
+				A9FCC7608A0537517BA81A9B /* PBXTargetDependency */,
+			);
+			name = MobileAgent;
+			packageProductDependencies = (AD2026090800000000000007, AD2026090800000000000008, );
+			productName = MobileAgent;
+			productReference = 0D7B2D4D2D2A4F3A9E1A0001 /* MobileAgent.app */;
+			productType = "com.apple.product-type.application";
+		};
+		0D7B2D672D2A4F3A9E1A0003 /* ScreenBroadcast */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0D7B2D6C2D2A4F3A9E1A0003 /* Build configuration list for PBXNativeTarget "ScreenBroadcast" */;
+			buildPhases = (
+				0D7B2D682D2A4F3A9E1A0003 /* Sources */,
+				0D7B2D652D2A4F3A9E1A0003 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ScreenBroadcast;
+			productName = ScreenBroadcast;
+			productReference = 0D7B2D642D2A4F3A9E1A0003 /* ScreenBroadcast.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		0D7B2D772D2A4F3A9E1A0004 /* ScreenBroadcastSetup */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0D7B2D7C2D2A4F3A9E1A0004 /* Build configuration list for PBXNativeTarget "ScreenBroadcastSetup" */;
+			buildPhases = (
+				0D7B2D782D2A4F3A9E1A0004 /* Sources */,
+				0D7B2D752D2A4F3A9E1A0004 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ScreenBroadcastSetup;
+			productName = ScreenBroadcastSetupUI;
+			productReference = 0D7B2D742D2A4F3A9E1A0004 /* ScreenBroadcastSetupUI.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		7953DEA9DAF6FE20498FC61B /* PacketTunnel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2CC88F8664E767ACDEA22D96 /* Build configuration list for PBXNativeTarget "PacketTunnel" */;
+			buildPhases = (
+				D3E0A7369EAB289E7222EA20 /* Sources */,
+				DB0F2EDA19AF323C90B7420D /* Frameworks */,
+				948DCE7FFBD788D820811E18 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PacketTunnel;
+			productName = PacketTunnel;
+			productReference = AAC9616E131073C0CDD44F73 /* PacketTunnel.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0D7B2D412D2A4F3A9E1A0001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					0D7B2D462D2A4F3A9E1A0001 = {
+						CreatedOnToolsVersion = 26.6;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.iOS = {
+								enabled = 1;
+							};
+							com.apple.NetworkExtensions.iOS = {
+								enabled = 1;
+							};
+						};
+					};
+					0D7B2D672D2A4F3A9E1A0003 = {
+						CreatedOnToolsVersion = 26.6;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.iOS = {
+								enabled = 1;
+							};
+						};
+					};
+					0D7B2D772D2A4F3A9E1A0004 = {
+						CreatedOnToolsVersion = 26.6;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.iOS = {
+								enabled = 1;
+							};
+						};
+					};
+					7953DEA9DAF6FE20498FC61B = {
+						CreatedOnToolsVersion = 27.0;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.iOS = {
+								enabled = 1;
+							};
+							com.apple.NetworkExtensions.iOS = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = 0D7B2D422D2A4F3A9E1A0001 /* Build configuration list for PBXProject "MobileAgent" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 0D7B2D402D2A4F3A9E1A0001;
+			packageReferences = (AD2026090800000000000009, );
+			productRefGroup = 0D7B2D4E2D2A4F3A9E1A0001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0D7B2D462D2A4F3A9E1A0001 /* MobileAgent */,
+				0D7B2D672D2A4F3A9E1A0003 /* ScreenBroadcast */,
+				0D7B2D772D2A4F3A9E1A0004 /* ScreenBroadcastSetup */,
+				7953DEA9DAF6FE20498FC61B /* PacketTunnel */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0D7B2D432D2A4F3A9E1A0001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AD2026090800000000000003 /* public in Resources */,
+				F01E20261024000000000001 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		948DCE7FFBD788D820811E18 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0D7B2D442D2A4F3A9E1A0001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AD2026090800000000000001 /* DeviceAppView.swift in Sources */,
+				AD2026090800000000000011 /* DeviceAppSetup.swift in Sources */,
+				0D7B2D4C2D2A4F3A9E1A0001 /* MobileAgentApp.swift in Sources */,
+				0D7B2D4C2D2A4F3A9E1A0010 /* WirelessPairingCoordinator.swift in Sources */,
+				0D7B2D4C2D2A4F3A9E1A0011 /* MainAppRemoteXPCBridge.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0D7B2D682D2A4F3A9E1A0003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D7B2D602D2A4F3A9E1A0003 /* BroadcastSampleHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0D7B2D782D2A4F3A9E1A0004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D7B2D702D2A4F3A9E1A0004 /* BroadcastSetupViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3E0A7369EAB289E7222EA20 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5FA25F165DCE7A05D3C2EAFC /* PacketTunnelProvider.swift in Sources */,
+				5FA25F165DCE7A05D3C2EB01 /* LocalDevVPNPacketRecycler.swift in Sources */,
+				5FA25F165DCE7A05D3C2EB00 /* OnDeviceRemoteXPCBridge.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AD2026090800000000000009 = {isa = XCRemoteSwiftPackageReference; repositoryURL = "https://github.com/ionic-team/capacitor-swift-pm.git"; requirement = {kind = exactVersion; version = 7.4.3; }; };
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AD2026090800000000000007 = {isa = XCSwiftPackageProductDependency; package = AD2026090800000000000009; productName = Capacitor; };
+		AD2026090800000000000008 = {isa = XCSwiftPackageProductDependency; package = AD2026090800000000000009; productName = Cordova; };
+/* End XCSwiftPackageProductDependency section */
+
+/* Begin PBXTargetDependency section */
+		0D7B2D6A2D2A4F3A9E1A0003 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0D7B2D672D2A4F3A9E1A0003 /* ScreenBroadcast */;
+			targetProxy = 0D7B2D6B2D2A4F3A9E1A0003 /* PBXContainerItemProxy */;
+		};
+		0D7B2D7A2D2A4F3A9E1A0004 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0D7B2D772D2A4F3A9E1A0004 /* ScreenBroadcastSetup */;
+			targetProxy = 0D7B2D7B2D2A4F3A9E1A0004 /* PBXContainerItemProxy */;
+		};
+		A9FCC7608A0537517BA81A9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = PacketTunnel;
+			target = 7953DEA9DAF6FE20498FC61B /* PacketTunnel */;
+			targetProxy = E77CC78EFCF24BB0B0888BDD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0D7B2D502D2A4F3A9E1A0001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		0D7B2D512D2A4F3A9E1A0001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0D7B2D542D2A4F3A9E1A0001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Entitlements/MobileAgent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 104;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ../../../device-sdk/ios/MobileAgent/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 0.3.74;
+				"OTHER_LDFLAGS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../../../device-sdk/ios/Vendor/idevice-main/libidevice_ffi.a",
+				);
+				GALATEA_BASE_BUNDLE_ID = dev.galatea.agent;
+				GALATEA_APP_GROUP = "group.$(GALATEA_BASE_BUNDLE_ID)";
+				GALATEA_WDA_RUNNER_BUNDLE_ID = dev.galatea.wda.xctrunner;
+                PRODUCT_BUNDLE_IDENTIFIER = "$(GALATEA_BASE_BUNDLE_ID)";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", );
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos*]" = "$(inherited) GALATEA_IDEVICE_MAIN_CLEAN GALATEA_IDEVICE_XCTEST";
+				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../../../device-sdk/ios/Vendor/idevice-main",
+				);
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0D7B2D552D2A4F3A9E1A0001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Entitlements/MobileAgent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 104;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ../../../device-sdk/ios/MobileAgent/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 0.3.74;
+				"OTHER_LDFLAGS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../../../device-sdk/ios/Vendor/idevice-main/libidevice_ffi.a",
+				);
+				GALATEA_BASE_BUNDLE_ID = dev.galatea.agent;
+				GALATEA_APP_GROUP = "group.$(GALATEA_BASE_BUNDLE_ID)";
+				GALATEA_WDA_RUNNER_BUNDLE_ID = dev.galatea.wda.xctrunner;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(GALATEA_BASE_BUNDLE_ID)";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", );
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[sdk=iphoneos*]" = "$(inherited) GALATEA_IDEVICE_MAIN_CLEAN GALATEA_IDEVICE_XCTEST";
+				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../../../device-sdk/ios/Vendor/idevice-main",
+				);
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		0D7B2D6D2D2A4F3A9E1A0003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Entitlements/ScreenBroadcast.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 104;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ../../../device-sdk/ios/ScreenBroadcast/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.3.74;
+				GALATEA_BASE_BUNDLE_ID = dev.galatea.agent;
+				GALATEA_APP_GROUP = "group.$(GALATEA_BASE_BUNDLE_ID)";
+				GALATEA_WDA_RUNNER_BUNDLE_ID = dev.galatea.wda.xctrunner;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(GALATEA_BASE_BUNDLE_ID).ScreenBroadcast";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0D7B2D6E2D2A4F3A9E1A0003 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Entitlements/ScreenBroadcast.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 104;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ../../../device-sdk/ios/ScreenBroadcast/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.3.74;
+				GALATEA_BASE_BUNDLE_ID = dev.galatea.agent;
+				GALATEA_APP_GROUP = "group.$(GALATEA_BASE_BUNDLE_ID)";
+				GALATEA_WDA_RUNNER_BUNDLE_ID = dev.galatea.wda.xctrunner;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(GALATEA_BASE_BUNDLE_ID).ScreenBroadcast";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		0D7B2D7D2D2A4F3A9E1A0004 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Entitlements/ScreenBroadcastSetup.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 104;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ../../../device-sdk/ios/ScreenBroadcastSetup/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.3.74;
+				GALATEA_BASE_BUNDLE_ID = dev.galatea.agent;
+				GALATEA_APP_GROUP = "group.$(GALATEA_BASE_BUNDLE_ID)";
+				GALATEA_WDA_RUNNER_BUNDLE_ID = dev.galatea.wda.xctrunner;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(GALATEA_BASE_BUNDLE_ID).ScreenBroadcastSetupUI";
+				PRODUCT_NAME = ScreenBroadcastSetupUI;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0D7B2D7E2D2A4F3A9E1A0004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Entitlements/ScreenBroadcastSetup.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 104;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ../../../device-sdk/ios/ScreenBroadcastSetup/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.3.74;
+				GALATEA_BASE_BUNDLE_ID = dev.galatea.agent;
+				GALATEA_APP_GROUP = "group.$(GALATEA_BASE_BUNDLE_ID)";
+				GALATEA_WDA_RUNNER_BUNDLE_ID = dev.galatea.wda.xctrunner;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(GALATEA_BASE_BUNDLE_ID).ScreenBroadcastSetupUI";
+				PRODUCT_NAME = ScreenBroadcastSetupUI;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		6131B7E1C24CDFA59651D9C3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = Entitlements/PacketTunnel.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 104;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ../../../device-sdk/ios/PacketTunnel/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.3.74;
+				"OTHER_LDFLAGS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../../../device-sdk/ios/Vendor/idevice/libidevice_ffi.a",
+				);
+				GALATEA_BASE_BUNDLE_ID = dev.galatea.agent;
+				GALATEA_APP_GROUP = "group.$(GALATEA_BASE_BUNDLE_ID)";
+				GALATEA_WDA_RUNNER_BUNDLE_ID = dev.galatea.wda.xctrunner;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(GALATEA_BASE_BUNDLE_ID).PacketTunnel";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) GALATEA_IDEVICE_XCTEST GALATEA_IDEVICE_REQUIRED";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../../../device-sdk/ios/Vendor/idevice",
+				);
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BBA332CA20A64F98801967F3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = Entitlements/PacketTunnel.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 104;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ../../../device-sdk/ios/PacketTunnel/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.3.74;
+				"OTHER_LDFLAGS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../../../device-sdk/ios/Vendor/idevice/libidevice_ffi.a",
+				);
+				GALATEA_BASE_BUNDLE_ID = dev.galatea.agent;
+				GALATEA_APP_GROUP = "group.$(GALATEA_BASE_BUNDLE_ID)";
+				GALATEA_WDA_RUNNER_BUNDLE_ID = dev.galatea.wda.xctrunner;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(GALATEA_BASE_BUNDLE_ID).PacketTunnel";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) GALATEA_IDEVICE_XCTEST GALATEA_IDEVICE_REQUIRED";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../../../device-sdk/ios/Vendor/idevice",
+				);
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0D7B2D422D2A4F3A9E1A0001 /* Build configuration list for PBXProject "MobileAgent" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0D7B2D502D2A4F3A9E1A0001 /* Debug */,
+				0D7B2D512D2A4F3A9E1A0001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0D7B2D562D2A4F3A9E1A0001 /* Build configuration list for PBXNativeTarget "MobileAgent" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0D7B2D542D2A4F3A9E1A0001 /* Debug */,
+				0D7B2D552D2A4F3A9E1A0001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0D7B2D6C2D2A4F3A9E1A0003 /* Build configuration list for PBXNativeTarget "ScreenBroadcast" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0D7B2D6D2D2A4F3A9E1A0003 /* Debug */,
+				0D7B2D6E2D2A4F3A9E1A0003 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0D7B2D7C2D2A4F3A9E1A0004 /* Build configuration list for PBXNativeTarget "ScreenBroadcastSetup" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0D7B2D7D2D2A4F3A9E1A0004 /* Debug */,
+				0D7B2D7E2D2A4F3A9E1A0004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2CC88F8664E767ACDEA22D96 /* Build configuration list for PBXNativeTarget "PacketTunnel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBA332CA20A64F98801967F3 /* Release */,
+				6131B7E1C24CDFA59651D9C3 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0D7B2D412D2A4F3A9E1A0001 /* Project object */;
+}

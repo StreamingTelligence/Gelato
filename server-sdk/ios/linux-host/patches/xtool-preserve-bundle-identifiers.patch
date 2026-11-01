@@ -1,0 +1,31 @@
+diff --git a/Sources/XKit/Utilities/ProvisioningIdentifiers.swift b/Sources/XKit/Utilities/ProvisioningIdentifiers.swift
+--- a/Sources/XKit/Utilities/ProvisioningIdentifiers.swift
++++ b/Sources/XKit/Utilities/ProvisioningIdentifiers.swift
+@@ -17,13 +17,11 @@ extension ProvisioningIdentifiers {
+     static let namePrefix = "XTool "
+ 
+     static func sanitize(identifier: String) -> String {
+-        guard identifier.hasPrefix(Self.idPrefix) else { return identifier }
+-        return identifier.split(separator: ".").dropFirst().joined(separator: ".")
++        identifier
+     }
+ 
+-    static func identifier(fromSanitized sanitized: String, context: SigningContext) -> String {
+-        let uuid = context.auth.identityID.split(separator: "-")[0].uppercased()
+-        return "\(Self.idPrefix)\(uuid).\(sanitized)"
++    static func identifier(fromSanitized sanitized: String, context _: SigningContext) -> String {
++        sanitized
+     }
+ 
+     static func safeify(identifier: String) -> String {
+@@ -36,8 +34,8 @@ extension ProvisioningIdentifiers {
+         return sanitize(identifier: id)
+     }
+ 
+-    static func groupID(fromSanitized sanitized: String, context: SigningContext) -> DeveloperServicesAppGroup.GroupID {
+-        .init(rawValue: "\(Self.groupPrefix)\(identifier(fromSanitized: sanitized, context: context))")
++    static func groupID(fromSanitized sanitized: String, context _: SigningContext) -> DeveloperServicesAppGroup.GroupID {
++        .init(rawValue: "\(Self.groupPrefix)\(sanitized)")
+     }
+ 
+     static func groupName(fromSanitized sanitized: String) -> String {

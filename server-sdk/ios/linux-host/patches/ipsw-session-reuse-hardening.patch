@@ -1,0 +1,154 @@
+diff --git a/internal/download/dev_portal.go b/internal/download/dev_portal.go
+index eab3d0f..cce94bc 100644
+--- a/internal/download/dev_portal.go
++++ b/internal/download/dev_portal.go
+@@ -453,8 +453,17 @@ func (dp *DevPortal) GetHashcash() string {
+ // Login to Apple
+ func (dp *DevPortal) Login(username, password string) error {
+ 	if dp.config.SessionOnlyPersistence {
+-		if err := dp.loadAutomationSession(username, password); err == nil {
++		sessionPath := dp.automationSessionPath()
++		if _, err := os.Lstat(sessionPath); err == nil {
++			if err := dp.loadAutomationSession(username, password); err != nil {
++				return fmt.Errorf("failed to reuse encrypted automation session: %v", err)
++			}
+ 			return nil
++		} else if !errors.Is(err, os.ErrNotExist) {
++			return fmt.Errorf("failed to inspect encrypted automation session: %v", err)
++		}
++		if username == "" || password == "" {
++			return fmt.Errorf("Apple ID credentials are required when no encrypted automation session exists")
+ 		}
+ 		if err := dp.getITCServiceKey(); err != nil {
+ 			return err
+@@ -1244,9 +1253,22 @@ func (dp *DevPortal) storeSession() error {
+ 	return nil
+ }
+ 
++type automationHostCookies struct {
++	Host    string         `json:"host"`
++	Cookies []*http.Cookie `json:"cookies"`
++}
++
+ type encryptedAutomationSession struct {
+-	AccountHash string  `json:"account_hash"`
+-	Session     session `json:"session"`
++	AccountHash string                  `json:"account_hash"`
++	Session     session                 `json:"session"`
++	HostCookies []automationHostCookies `json:"host_cookies"`
++}
++
++var automationCookieHosts = []string{
++	"idmsa.apple.com",
++	"appstoreconnect.apple.com",
++	"developer.apple.com",
++	"download.developer.apple.com",
+ }
+ 
+ func automationAccountHash(username string) string {
+@@ -1324,16 +1346,25 @@ func (dp *DevPortal) storeAutomationSession(username, password string) error {
+ 	if err := dp.prepareAutomationSessionDirectory(); err != nil {
+ 		return err
+ 	}
+-	payload, err := json.Marshal(encryptedAutomationSession{
++	saved := encryptedAutomationSession{
+ 		AccountHash: automationAccountHash(username),
+ 		Session: session{
+ 			SessionID: dp.GetSessionID(),
+ 			SCNT:      dp.GetSCNT(),
+ 			WidgetKey: dp.GetWidgetKey(),
+ 			HashCash:  dp.GetHashcash(),
+-			Cookies:   dp.Client.Jar.Cookies(&url.URL{Scheme: "https", Host: "idmsa.apple.com"}),
+ 		},
+-	})
++	}
++	for _, host := range automationCookieHosts {
++		cookies := dp.Client.Jar.Cookies(&url.URL{Scheme: "https", Host: host})
++		if len(cookies) > 0 {
++			saved.HostCookies = append(saved.HostCookies, automationHostCookies{
++				Host:    host,
++				Cookies: cookies,
++			})
++		}
++	}
++	payload, err := json.Marshal(saved)
+ 	if err != nil {
+ 		return fmt.Errorf("failed to encode automation session: %v", err)
+ 	}
+@@ -1369,14 +1400,14 @@ func (dp *DevPortal) storeAutomationSession(username, password string) error {
+ 	return nil
+ }
+ 
+-func (dp *DevPortal) readAutomationSession(username, password string) (session, error) {
+-	var result session
++func (dp *DevPortal) readAutomationSession(username, password string) (encryptedAutomationSession, error) {
++	var result encryptedAutomationSession
+ 	if err := dp.prepareAutomationSessionDirectory(); err != nil {
+ 		return result, err
+ 	}
+ 	sessionPath := dp.automationSessionPath()
+-	info, err := os.Stat(sessionPath)
+-	if err != nil || info.Mode().Perm() != 0600 {
++	info, err := os.Lstat(sessionPath)
++	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 {
+ 		return result, fmt.Errorf("automation session is missing or insecure")
+ 	}
+ 	sealed, err := os.ReadFile(sessionPath)
+@@ -1387,19 +1418,18 @@ func (dp *DevPortal) readAutomationSession(username, password string) (session,
+ 	if err != nil {
+ 		return result, fmt.Errorf("failed to decrypt automation session: %v", err)
+ 	}
+-	var saved encryptedAutomationSession
+-	if err := json.Unmarshal(plaintext, &saved); err != nil {
++	if err := json.Unmarshal(plaintext, &result); err != nil {
+ 		return result, fmt.Errorf("failed to decode automation session: %v", err)
+ 	}
+ 	expected := []byte(automationAccountHash(username))
+-	actual := []byte(saved.AccountHash)
++	actual := []byte(result.AccountHash)
+ 	if len(expected) != len(actual) || subtle.ConstantTimeCompare(expected, actual) != 1 {
+ 		return result, fmt.Errorf("automation session belongs to another Apple ID")
+ 	}
+-	if saved.Session.SessionID == "" || saved.Session.WidgetKey == "" || len(saved.Session.Cookies) == 0 {
++	if result.Session.SessionID == "" || result.Session.WidgetKey == "" || len(result.HostCookies) == 0 {
+ 		return result, fmt.Errorf("automation session is incomplete")
+ 	}
+-	return saved.Session, nil
++	return result, nil
+ }
+ 
+ func (dp *DevPortal) loadAutomationSession(username, password string) error {
+@@ -1407,13 +1437,27 @@ func (dp *DevPortal) loadAutomationSession(username, password string) error {
+ 	if err != nil {
+ 		return err
+ 	}
+-	dp.config.SessionID = saved.SessionID
+-	dp.config.SCNT = saved.SCNT
+-	dp.config.WidgetKey = saved.WidgetKey
+-	dp.config.HashCash = saved.HashCash
+-	dp.Client.Jar.SetCookies(&url.URL{Scheme: "https", Host: "idmsa.apple.com"}, saved.Cookies)
++	dp.config.SessionID = saved.Session.SessionID
++	dp.config.SCNT = saved.Session.SCNT
++	dp.config.WidgetKey = saved.Session.WidgetKey
++	dp.config.HashCash = saved.Session.HashCash
++	for _, hostCookies := range saved.HostCookies {
++		knownHost := false
++		for _, host := range automationCookieHosts {
++			if hostCookies.Host == host {
++				knownHost = true
++				break
++			}
++		}
++		if !knownHost || len(hostCookies.Cookies) == 0 {
++			return fmt.Errorf("automation session contains an invalid cookie host")
++		}
++		dp.Client.Jar.SetCookies(
++			&url.URL{Scheme: "https", Host: hostCookies.Host},
++			hostCookies.Cookies,
++		)
++	}
+ 	if err := dp.getOlympusSession(); err != nil {
+-		_ = os.Remove(dp.automationSessionPath())
+ 		return err
+ 	}
+ 	return nil

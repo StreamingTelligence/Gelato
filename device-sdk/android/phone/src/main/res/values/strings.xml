@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Galatea</string>
+    <string name="agent_channel_name">Gelato device connection</string>
+    <string name="screen_channel_name">Screen stream</string>
+    <string name="agent_accessibility_description">Reads the active app interface for user-authorized remote automation.</string>
+</resources>

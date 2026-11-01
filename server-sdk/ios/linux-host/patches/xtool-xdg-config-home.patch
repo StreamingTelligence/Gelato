@@ -1,0 +1,25 @@
+diff --git a/Sources/XKit/Utilities/DirectoryProvider.swift b/Sources/XKit/Utilities/DirectoryProvider.swift
+index d1cd4f8..d55d34a 100644
+--- a/Sources/XKit/Utilities/DirectoryProvider.swift
++++ b/Sources/XKit/Utilities/DirectoryProvider.swift
+@@ -6,9 +6,18 @@ private struct PersistentDirectoryProvider: DependencyKey, Sendable {
+     var directory: URL
+ 
+     static let liveValue = PersistentDirectoryProvider(
+-        directory: URL(fileURLWithPath: NSHomeDirectory())
+-            .appendingPathComponent(".config/xtool")
++        directory: defaultDirectory()
+     )
++
++    private static func defaultDirectory() -> URL {
++        if let xdgConfigHome = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"],
++           !xdgConfigHome.isEmpty {
++            return URL(fileURLWithPath: xdgConfigHome, isDirectory: true)
++                .appendingPathComponent("xtool", isDirectory: true)
++        }
++        return URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true)
++            .appendingPathComponent(".config/xtool", isDirectory: true)
++    }
+ }
+ 
+ extension DependencyValues {

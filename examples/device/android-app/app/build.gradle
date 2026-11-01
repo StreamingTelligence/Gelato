@@ -1,0 +1,17 @@
+plugins { id "com.android.application" }
+android {
+    namespace "dev.galatea.example"
+    compileSdk 35
+    defaultConfig {
+        applicationId providers.gradleProperty("galateaAndroidApplicationId").getOrElse("dev.galatea.android")
+        minSdk 26
+        targetSdk 35
+        versionCode 15
+        versionName "1.0.5"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+dependencies { implementation project(":android-phone") }

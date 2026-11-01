@@ -1,0 +1,17 @@
+{
+  "name": "@gelato/codex-model-plugin",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=22.12.0"},
+  "scripts": {
+    "build": "esbuild src/index.mjs --bundle --packages=external --platform=node --format=esm --outfile=dist/index.mjs && esbuild src/action.mjs --bundle --packages=external --platform=node --format=esm --outfile=dist/action.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "ws": "^8.18.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {"esbuild": "0.28.2"}
+}

@@ -1,0 +1,51 @@
+diff --git a/Sources/XToolSupport/AuthCommand.swift b/Sources/XToolSupport/AuthCommand.swift
+index af74594..a28ddb9 100644
+--- a/Sources/XToolSupport/AuthCommand.swift
++++ b/Sources/XToolSupport/AuthCommand.swift
+@@ -26,11 +26,22 @@ struct AuthOperation {
+     var preferPaidTeam = false
+ 
+     func run() async throws {
+         if let token = try? AuthToken.saved(), !logoutFromExisting {
+-            if !quiet {
+-                print("Logged in.\n\(token)")
++            let matchesRequestedAccount: Bool
++            switch token {
++            case .xcode(let data):
++                matchesRequestedAccount = username.map {
++                    data.appleID.caseInsensitiveCompare($0) == .orderedSame
++                } ?? true
++            case .appStoreConnect:
++                matchesRequestedAccount = username == nil
++            }
++            if matchesRequestedAccount {
++                if !quiet {
++                    print("Logged in.\n\(token)")
++                }
++                return
+             }
+-            return
+         }
+ 
+         let mode: AuthMode
+@@ -162,6 +173,11 @@ struct AuthLoginCommand: AsyncParsableCommand {
+     )
+     var credentialsStdin = false
+ 
++    @Flag(
++        help: "Reuse a saved token only when it belongs to the requested Apple ID"
++    )
++    var reuseExisting = false
++
+     @Flag(help: "Suppress account, team, and authentication token details")
+     var quiet = false
+ 
+@@ -193,7 +209,7 @@ struct AuthLoginCommand: AsyncParsableCommand {
+         var operation = AuthOperation(
+             username: loginUsername,
+             password: loginPassword,
+-            logoutFromExisting: true,
++            logoutFromExisting: !reuseExisting,
+             mode: mode
+         )
+         operation.preferPaidTeam = preferPaidTeam
