@@ -10,7 +10,7 @@ Gelato 是 **StreamingTelligence Lab 的生态支撑项目**。Gelato名字源�
 
 ## 演示视频
 
-[![观看 Gelato 演示视频](docs/assets/gelato-demo-v7-poster.jpg)](docs/assets/gelato-demo-v7.mp4)
+https://github.com/user-attachments/assets/5811c155-1fd8-4fdc-9f51-a381bf7f0e6c
 
 观看 [Gelato 演示（1 分 46 秒，MP4）](docs/assets/gelato-demo-v7.mp4)：iPhone 无线控制、水壶提醒，以及通过 Rokid 眼镜提供实时辅助。
 

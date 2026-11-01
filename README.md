@@ -10,7 +10,7 @@ Gelato is an ecosystem project of **StreamingTelligence Lab**. Its name is inspi
 
 ## Demo video
 
-[![Watch the Gelato demo video](docs/assets/gelato-demo-v7-poster.jpg)](docs/assets/gelato-demo-v7.mp4)
+https://github.com/user-attachments/assets/5811c155-1fd8-4fdc-9f51-a381bf7f0e6c
 
 Watch the [Gelato demo (1:46, MP4)](docs/assets/gelato-demo-v7.mp4): wireless iPhone control, a kettle notification, and real-time assistance through Rokid glasses.
 
