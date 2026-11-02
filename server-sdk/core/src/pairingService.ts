@@ -57,6 +57,7 @@ interface Store {
 export class DeviceAgentPairingService {
   private readonly pending = new Map<string, PairingSession>();
   private readonly pairings = new Map<string, PairedDeviceAgent>();
+  private stableStore: Store = { format: "gelato-pairings.v1", pairings: [], pending: [] };
 
   constructor(private readonly storePath: string) {
     this.load();
@@ -274,7 +275,10 @@ export class DeviceAgentPairingService {
   }
 
   private load(): void {
-    if (!fs.existsSync(this.storePath)) return;
+    if (!fs.existsSync(this.storePath)) {
+      this.stableStore = this.snapshotStore();
+      return;
+    }
     const data = JSON.parse(fs.readFileSync(this.storePath, "utf8")) as Partial<Store>;
     if (data.format !== "gelato-pairings.v1") {
       throw new Error("Unsupported Gelato pairing store format");
@@ -286,17 +290,38 @@ export class DeviceAgentPairingService {
     for (const session of data.pending ?? []) {
       if (session.code && session.expiresAt > now) this.pending.set(session.code, session);
     }
+    this.stableStore = this.snapshotStore();
   }
 
   private persist(): void {
-    fs.mkdirSync(path.dirname(this.storePath), { recursive: true, mode: 0o700 });
-    const data: Store = {
+    const data = this.snapshotStore();
+    const temp = `${this.storePath}.tmp`;
+    try {
+      fs.mkdirSync(path.dirname(this.storePath), { recursive: true, mode: 0o700 });
+      fs.writeFileSync(temp, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
+      fs.chmodSync(temp, 0o600);
+      fs.renameSync(temp, this.storePath);
+      this.stableStore = structuredClone(data);
+    } catch (error) {
+      try { fs.unlinkSync(temp); } catch { /* The temporary file may not exist. */ }
+      this.restoreStore(this.stableStore);
+      throw error;
+    }
+  }
+
+  private snapshotStore(): Store {
+    return {
       format: "gelato-pairings.v1",
-      pairings: [...this.pairings.values()],
-      pending: [...this.pending.values()]
+      pairings: structuredClone([...this.pairings.values()]),
+      pending: structuredClone([...this.pending.values()])
     };
-    fs.writeFileSync(this.storePath, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
-    fs.chmodSync(this.storePath, 0o600);
+  }
+
+  private restoreStore(data: Store): void {
+    this.pairings.clear();
+    this.pending.clear();
+    for (const record of data.pairings) this.pairings.set(record.agentId, structuredClone(record));
+    for (const session of data.pending) this.pending.set(session.code, structuredClone(session));
   }
 }
 

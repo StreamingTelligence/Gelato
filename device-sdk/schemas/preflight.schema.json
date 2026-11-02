@@ -32,22 +32,22 @@
     },
     "allOf": [
       {
-        "if": { "properties": { "check": { "properties": { "state": { "const": "passed" } } } } },
+        "if": { "properties": { "check": { "type": "object", "properties": { "state": { "const": "passed" } } } } },
         "then": {
           "properties": {
             "done": { "const": true },
-            "check": { "properties": { "basis": { "enum": ["system", "probe", "inference"] } } }
+            "check": { "type": "object", "properties": { "basis": { "enum": ["system", "probe", "inference"] } } }
           }
         },
         "else": { "properties": { "done": { "const": false } } }
       },
       {
-        "if": { "properties": { "check": { "properties": { "state": { "const": "unknown" } } } } },
-        "then": { "properties": { "check": { "properties": { "basis": { "const": "none" } } } } }
+        "if": { "properties": { "check": { "type": "object", "properties": { "state": { "const": "unknown" } } } } },
+        "then": { "properties": { "check": { "type": "object", "properties": { "basis": { "const": "none" } } } } }
       },
       {
-        "if": { "properties": { "check": { "properties": { "state": { "const": "failed" } } } } },
-        "then": { "properties": { "check": { "properties": { "basis": { "enum": ["system", "probe", "inference"] } } } } }
+        "if": { "properties": { "check": { "type": "object", "properties": { "state": { "const": "failed" } } } } },
+        "then": { "properties": { "check": { "type": "object", "properties": { "basis": { "enum": ["system", "probe", "inference"] } } } } }
       }
     ]
   }

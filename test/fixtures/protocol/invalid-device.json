@@ -1,0 +1,11 @@
+[
+  { "schema": "envelope", "name": "missing body", "value": { "protocol": "gelato.v1", "type": "x", "messageId": "msg_testmessage001", "sentAt": "2026-01-01T00:00:00Z" } },
+  { "schema": "envelope", "name": "unknown field", "value": { "protocol": "gelato.v1", "type": "x", "messageId": "msg_testmessage001", "sentAt": "2026-01-01T00:00:00Z", "body": {}, "secret": "no" } },
+  { "schema": "envelope", "name": "wrong protocol", "value": { "protocol": "gelato.v2", "type": "x", "messageId": "msg_testmessage001", "sentAt": "2026-01-01T00:00:00Z", "body": {} } },
+  { "schema": "envelope", "name": "invalid id", "value": { "protocol": "gelato.v1", "type": "x", "messageId": "bad", "sentAt": "2026-01-01T00:00:00Z", "body": {} } },
+  { "schema": "input", "name": "too many parts", "value": { "kind": "instruction", "parts": [{ "type": "text", "text": "1" }, { "type": "text", "text": "2" }, { "type": "text", "text": "3" }, { "type": "text", "text": "4" }, { "type": "text", "text": "5" }, { "type": "text", "text": "6" }, { "type": "text", "text": "7" }, { "type": "text", "text": "8" }, { "type": "text", "text": "9" }] } },
+  { "schema": "command", "name": "bad terminal policy", "value": { "commandId": "cmd_testcommand001", "capability": "screen.capture", "capabilityVersion": 1, "arguments": {}, "deadline": "not-a-date", "idempotency": "retry-forever" } },
+  { "schema": "snapshot", "name": "missing describe capability", "value": { "revision": 1, "kind": "android.phone", "displayName": "Test", "os": { "family": "android", "version": "15" }, "driver": { "id": "x", "version": "1", "location": "device", "state": "ready" }, "hardware": { "present": true, "connected": true }, "capabilities": [{ "name": "screen.capture", "version": 1 }] } },
+  { "schema": "stream-offer", "name": "oversize frame", "value": { "streamId": "str_teststream001", "purpose": "screen", "direction": "agent-to-controller", "contentType": "image/jpeg", "maxFrameBytes": 2097153, "maxTotalBytes": 8388608 } },
+  { "schema": "preflight", "name": "unknown cannot be done", "value": [{ "id": "network", "title": "Network", "detail": "Unknown", "done": true, "check": { "state": "unknown", "basis": "none" }, "phase": "before-pairing", "required": true }] }
+]

@@ -43,12 +43,13 @@ export class ObservationHub {
       if (stream.direction !== "agent-to-controller" || stream.metadata?.observationFraming === "image-per-message.v1"
           || !["image/png", "image/jpeg", "image/webp"].includes(stream.contentType)) return;
       const file = streams.file(stream.streamId);
-      if (file && fs.statSync(file).size <= 10 * 1024 * 1024) {
-        try {
+      if (!file) return;
+      try {
+        if (fs.statSync(file).size <= 10 * 1024 * 1024) {
           this.publish(stream.deviceId, stream.streamId, 0, fs.readFileSync(file), stream.contentType,
                        typeof stream.metadata?.capturedAtS === "number" ? stream.metadata.capturedAtS : null);
-        } catch { this.rejected++; }
-      }
+        }
+      } catch { this.rejected++; }
     };
     this.listeners = [["media.chunk", chunk], ["complete", complete]];
     for (const [name, listener] of this.listeners) streams.on(name, listener);

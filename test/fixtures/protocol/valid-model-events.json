@@ -1,0 +1,16 @@
+[
+  { "protocol": "gelato.model.v1", "type": "session.open", "eventId": "event_0001", "sessionId": "session_0001", "seq": 1, "sentAt": "2026-01-01T00:00:00Z", "body": { "deviceId": "dev_testdevice0001", "model": "test-model" } },
+  { "protocol": "gelato.model.v1", "type": "session.ready", "eventId": "event_0002", "sessionId": "session_0001", "seq": 2, "sentAt": "2026-01-01T00:00:01Z", "body": { "capabilities": ["text", "image", "action-proposal"] } },
+  { "protocol": "gelato.model.v1", "type": "input.begin", "eventId": "event_0003", "sessionId": "session_0001", "seq": 3, "sentAt": "2026-01-01T00:00:02Z", "body": { "turnId": "turn_00001", "kind": "instruction", "sourceMessageId": "msg_testmessage001" } },
+  { "protocol": "gelato.model.v1", "type": "input.append", "eventId": "event_0004", "sessionId": "session_0001", "seq": 4, "sentAt": "2026-01-01T00:00:03Z", "body": { "turnId": "turn_00001", "type": "text", "text": "hello" } },
+  { "protocol": "gelato.model.v1", "type": "input.append", "eventId": "event_0005", "sessionId": "session_0001", "seq": 5, "sentAt": "2026-01-01T00:00:04Z", "body": { "turnId": "turn_00001", "type": "media", "mimeType": "image/jpeg", "chunkIndex": 0, "dataBase64": "aGVsbG8=", "final": true } },
+  { "protocol": "gelato.model.v1", "type": "input.commit", "eventId": "event_0006", "sessionId": "session_0001", "seq": 6, "sentAt": "2026-01-01T00:00:05Z", "body": { "turnId": "turn_00001" } },
+  { "protocol": "gelato.model.v1", "type": "reply.delta", "eventId": "event_0007", "sessionId": "session_0001", "seq": 7, "sentAt": "2026-01-01T00:00:06Z", "body": { "turnId": "turn_00001", "text": "partial" } },
+  { "protocol": "gelato.model.v1", "type": "reply.complete", "eventId": "event_0008", "sessionId": "session_0001", "seq": 8, "sentAt": "2026-01-01T00:00:07Z", "body": { "turnId": "turn_00001", "text": "complete" } },
+  { "protocol": "gelato.model.v1", "type": "action.propose", "eventId": "event_0009", "sessionId": "session_0001", "seq": 9, "sentAt": "2026-01-01T00:00:08Z", "body": { "turnId": "turn_00001", "proposalId": "proposal_001", "capability": "screen.capture", "args": {} } },
+  { "protocol": "gelato.model.v1", "type": "action.result", "eventId": "event_0010", "sessionId": "session_0001", "seq": 10, "sentAt": "2026-01-01T00:00:09Z", "body": { "turnId": "turn_00001", "proposalId": "proposal_001", "status": "completed", "commandId": "cmd_testcommand001", "result": {} } },
+  { "protocol": "gelato.model.v1", "type": "turn.cancel", "eventId": "event_0011", "sessionId": "session_0001", "seq": 11, "sentAt": "2026-01-01T00:00:10Z", "body": { "turnId": "turn_00001" } },
+  { "protocol": "gelato.model.v1", "type": "turn.end", "eventId": "event_0012", "sessionId": "session_0001", "seq": 12, "sentAt": "2026-01-01T00:00:11Z", "body": { "turnId": "turn_00001", "status": "completed" } },
+  { "protocol": "gelato.model.v1", "type": "session.error", "eventId": "event_0013", "sessionId": "session_0001", "seq": 13, "sentAt": "2026-01-01T00:00:12Z", "body": { "code": "upstream_timeout", "retryable": true, "message": "timed out" } },
+  { "protocol": "gelato.model.v1", "type": "session.close", "eventId": "event_0014", "sessionId": "session_0001", "seq": 14, "sentAt": "2026-01-01T00:00:13Z", "body": {} }
+]

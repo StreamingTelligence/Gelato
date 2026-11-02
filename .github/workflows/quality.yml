@@ -1,0 +1,52 @@
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  node-quality:
+    name: Node build and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: mkdir -p test-results
+      - run: npm run ci
+      - name: Record dependency audit without blocking this phase
+        continue-on-error: true
+        run: npm audit --omit=dev --json > test-results/npm-audit.json
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-test-results
+          if-no-files-found: warn
+          path: |
+            test-results/
+            coverage/
+
+  ci-required:
+    name: ci-required
+    if: always()
+    needs: [node-quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require all quality jobs
+        env:
+          NODE_QUALITY_RESULT: ${{ needs.node-quality.result }}
+        run: test "$NODE_QUALITY_RESULT" = success
