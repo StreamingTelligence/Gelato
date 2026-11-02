@@ -1,0 +1,82 @@
+{
+  "agent-descriptor": {
+    "installationId": "inst_testdevice0001",
+    "agentKind": "android-phone",
+    "hostPlatform": "android",
+    "deviceKind": "android.phone",
+    "displayName": "Test phone",
+    "agentVersion": "1.0.0"
+  },
+  "capability": {
+    "name": "device.describe",
+    "version": 1
+  },
+  "command": {
+    "commandId": "cmd_testcommand001",
+    "capability": "screen.capture",
+    "capabilityVersion": 1,
+    "arguments": { "format": "jpeg" },
+    "deadline": "2026-01-01T00:01:00.000Z",
+    "idempotency": "read-only"
+  },
+  "envelope": {
+    "protocol": "gelato.v1",
+    "type": "device.snapshot",
+    "messageId": "msg_testmessage001",
+    "deviceId": "dev_testdevice0001",
+    "sentAt": "2026-01-01T00:00:00.000Z",
+    "body": {}
+  },
+  "input": {
+    "kind": "observation",
+    "parts": [
+      { "type": "text", "text": "Screen changed" },
+      { "type": "media", "streamId": "str_teststream001", "mimeType": "image/jpeg" }
+    ]
+  },
+  "observation": {
+    "frame_ref": "obs_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "device_id": "dev_testdevice0001",
+    "stream_id": "str_teststream001",
+    "sequence": 0,
+    "captured_at_s": null,
+    "source_time_s": 1.5,
+    "received_at_s": 2,
+    "available_at_s": 2.1,
+    "mime_type": "image/jpeg",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "data_base64": "aGVsbG8="
+  },
+  "preflight": [
+    {
+      "id": "network",
+      "title": "Network",
+      "detail": "Controller is reachable",
+      "done": true,
+      "check": { "state": "passed", "basis": "probe" },
+      "phase": "before-pairing",
+      "required": true
+    }
+  ],
+  "reply": {
+    "text": "Done",
+    "inReplyTo": "msg_testmessage001"
+  },
+  "snapshot": {
+    "revision": 1,
+    "kind": "android.phone",
+    "displayName": "Test phone",
+    "os": { "family": "android", "version": "15" },
+    "driver": { "id": "test-driver", "version": "1.0.0", "location": "device", "state": "ready" },
+    "hardware": { "present": true, "connected": true, "controlAllowed": true, "userAction": null },
+    "capabilities": [{ "name": "device.describe", "version": 1 }]
+  },
+  "stream-offer": {
+    "streamId": "str_teststream001",
+    "purpose": "screen",
+    "direction": "agent-to-controller",
+    "contentType": "image/jpeg",
+    "maxFrameBytes": 1048576,
+    "maxTotalBytes": 8388608
+  }
+}

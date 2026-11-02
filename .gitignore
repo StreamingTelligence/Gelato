@@ -36,6 +36,8 @@ __pycache__/
 .venv/
 *.egg-info/
 *.a
+coverage/
+test-results/
 device-sdk/android/phone/src/main/assets/public/
 device-sdk/android/phone/src/main/assets/capacitor.config.json
 examples/device/rokid-ios-app/Pods/

@@ -1,0 +1,6 @@
+[
+  { "name": "wrong protocol", "value": { "protocol": "gelato.model.v2", "type": "session.close", "eventId": "event_0001", "sessionId": "session_0001", "seq": 1, "sentAt": "2026-01-01T00:00:00Z", "body": {} } },
+  { "name": "extra envelope field", "value": { "protocol": "gelato.model.v1", "type": "session.close", "eventId": "event_0001", "sessionId": "session_0001", "seq": 1, "sentAt": "2026-01-01T00:00:00Z", "body": {}, "token": "secret" } },
+  { "name": "invalid turn status", "value": { "protocol": "gelato.model.v1", "type": "turn.end", "eventId": "event_0001", "sessionId": "session_0001", "seq": 1, "sentAt": "2026-01-01T00:00:00Z", "body": { "turnId": "turn_00001", "status": "unknown" } } },
+  { "name": "invalid media chunk", "value": { "protocol": "gelato.model.v1", "type": "input.append", "eventId": "event_0001", "sessionId": "session_0001", "seq": 1, "sentAt": "2026-01-01T00:00:00Z", "body": { "turnId": "turn_00001", "type": "media", "mimeType": "image/jpeg", "chunkIndex": -1, "dataBase64": "", "final": true } } }
+]

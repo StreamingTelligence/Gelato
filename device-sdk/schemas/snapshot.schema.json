@@ -152,7 +152,7 @@
         }
       },
       "items": {
-        "$ref": "capability.schema.json"
+        "$ref": "urn:gelato:v1:capability"
       },
       "uniqueItems": true
     }

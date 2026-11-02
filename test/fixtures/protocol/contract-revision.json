@@ -1,0 +1,15 @@
+{
+  "docs/protocol.md": "d1ae0dec38cf26e8a0dae3ec3c0e93b3e262838a19fc1196d92467a04cb904f4",
+  "model_interface/protocol.md": "7ff2813b5b3b4dc88d64d4faa0136235ea1568e62d1bdec7fcc4a8ba6aeef58c",
+  "device-sdk/schemas/agent-descriptor.schema.json": "770133f0d17c77611540905045cee8a5d7a823c41ebbeb6daad4eb83788c5998",
+  "device-sdk/schemas/capability.schema.json": "91107d4fccfe5168bf884646afdc574c12d6111a56a2cce66598a7a1353e888b",
+  "device-sdk/schemas/command.schema.json": "d0d2d19bc9107b4a1513d9f6a50a2f86299525c232fea7e316d3b3061abd9c3c",
+  "device-sdk/schemas/envelope.schema.json": "d9f6e08bb09e1c062aaa379275e18abe9c2296e21e0a4b00e59f5925f3e3cf5a",
+  "device-sdk/schemas/input.schema.json": "d0fe4c6b46a2f8b3b5065c75d7cee142783a9c6923ae14fd766d1fcd48faee43",
+  "device-sdk/schemas/observation.schema.json": "386f133e2a0d4be81dfaa546e30d942ddcbedda25095faf32afcbb8417838a0d",
+  "device-sdk/schemas/preflight.schema.json": "7d532993eb26bffaa16470d4119a13882c9b616a293861acc558d60d61ac0f89",
+  "device-sdk/schemas/reply.schema.json": "54ecedeb4ee9eae16b719e0d7949ed1a85ea3e82a9e11305655586710fc48eaa",
+  "device-sdk/schemas/snapshot.schema.json": "159789157cb62f35044e6a4132df4dbab3736058d286aa41e10c61ac7e362188",
+  "device-sdk/schemas/stream-offer.schema.json": "8ebbf3473fa2910e32af9a27442f9da299cd0b63f635a0a5226e96e24ff4e329",
+  "model_interface/schemas/model-event.schema.json": "39b588cf9ef118b8a1410b47b70e19f2dc9f036525414ef031aff24933aab624"
+}
