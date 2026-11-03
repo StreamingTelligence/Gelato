@@ -22,7 +22,8 @@ Open `http://127.0.0.1:8090` and unlock the console with the token.
 | `TINODE_WS_URL`, `TINODE_API_KEY` | Account provider for native-app login |
 | `GALATEA_HARNESS_GRANTS_FILE` | Optional user/device-scoped host API grants |
 | `GELATO_PAIRING_STORE`, `GELATO_STREAM_DIR` | Pairing store and media directory |
-| `GELATO_MODEL_PROVIDER` | Optional `qwen-live-harness`, `codex`, generic `ws`, or `http`; unset disables the model unless an HTTP URL is given |
+| `GELATO_MODEL_PROVIDER` | Optional `streamingtelligence`, `qwen-live-harness`, `codex`, generic `ws`, or `http`; unset disables the model unless an HTTP URL is given |
+| `STREAMINGTELLIGENCE_API_KEY`, `STREAMINGTELLIGENCE_MODEL` | Private service key and optional model ID (default `kairos-v2`) for the native streaming mux |
 | `DASHSCOPE_API_KEY` | Required only for the Qwen Live Harness mode; keep it outside the repository |
 | `QWEN_LIVE_ENDPOINT`, `QWEN_LIVE_MODEL`, `QWEN_LIVE_VOICE` | Optional Qwen provider origin, model, and supported voice override |
 | `GELATO_MODEL_SESSION_URL` | `gelato.model.v1` WSS runtime URL for `codex` or generic `ws` mode (loopback WS for development) |

@@ -91,6 +91,7 @@ Controller 可以通过 `gelato.model.v1` [模型会话规范](model_interface/p
 
 | 模型端 | 接入方式与支持能力 | MVP 实现 |
 | --- | --- | --- |
+| StreamingTelligence | 进程内适配器通过 WSS 连接原生流式 mux，支持文字提问与持续 JPEG 画面输入；不提出设备操作建议，也不返回音频。 | [`streamingTelligenceEndpoint.ts`](model_interface/src/streamingTelligenceEndpoint.ts) |
 | Qwen Live Harness | 进程内适配器使用固定版本的 `qwen-live-harness` 包，支持文字／PCM 音频回合、Rokid 实时音频与每秒一帧 JPEG 输入，以及音频回复；不提出设备操作建议。 | [`qwenLiveEndpoint.ts`](model_interface/src/qwenLiveEndpoint.ts) |
 | Codex | 独立的 `gelato.model.v1` WebSocket 模型端通过 Codex app-server 处理文字／图像回合和设备操作建议；不接收音频或持续的每秒一帧视频。 | [Codex 模型端插件](model_interface/gelato-codex-model/) |
 | 一次性 HTTP | 不绑定模型厂商的请求／响应适配器，可用于有大小限制的文字或图像回合；它不实现持续的 `gelato.model.v1` 会话。 | [`httpEndpoint.ts`](model_interface/src/httpEndpoint.ts) |
