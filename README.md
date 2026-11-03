@@ -91,6 +91,7 @@ The [`model_interface/`](model_interface/README.md) directory contains the proto
 
 | Model runtime | How it is connected and what it supports | MVP implementation |
 | --- | --- | --- |
+| StreamingTelligence | An in-process adapter connects to the native streaming mux over WSS for text questions and continuous JPEG observations. It does not propose device actions or return audio. | [`streamingTelligenceEndpoint.ts`](model_interface/src/streamingTelligenceEndpoint.ts) |
 | Qwen Live Harness | An in-process adapter uses the pinned `qwen-live-harness` package for text/PCM audio turns, live Rokid audio and 1 fps JPEG input, and audio replies. It does not propose device actions. | [`qwenLiveEndpoint.ts`](model_interface/src/qwenLiveEndpoint.ts) |
 | Codex | An independent `gelato.model.v1` WebSocket endpoint drives Codex app-server for text/image turns and device-action proposals. It does not ingest audio or continuous 1 fps video. | [Codex model plugin](model_interface/gelato-codex-model/) |
 | One-shot HTTP | A provider-neutral request/response adapter is available for bounded text or image turns. It does not implement a persistent `gelato.model.v1` session. | [`httpEndpoint.ts`](model_interface/src/httpEndpoint.ts) |

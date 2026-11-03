@@ -153,6 +153,18 @@ const modelConnection = await createModelConnection({
   }
 });
 const modelEndpoint = modelConnection?.endpoint;
+const visualSequences = new Map<string, number>();
+const visualPump = modelConnection?.continuousVisual ? setInterval(() => {
+  for (const device of unifiedRegistry.list()) {
+    if (!device.connection.online || device.hardware.controlAllowed !== true) continue;
+    const frame = latestScreenFrames.latest(device.deviceId);
+    if (!frame || visualSequences.get(device.deviceId) === frame.sequence) continue;
+    if (modelConnection.live?.pushImage(device.deviceId, frame.jpeg)) {
+      visualSequences.set(device.deviceId, frame.sequence);
+    }
+  }
+}, 1_000) : undefined;
+visualPump?.unref();
 const modelBridge = modelEndpoint
   ? new ModelBridge(agentGateway, streamBroker, modelEndpoint)
   : undefined;
@@ -162,6 +174,7 @@ commandService.on("cancel", ({ deviceId, commandId, reason }) => {
 unifiedRegistry.on("changed", (device: UnifiedDeviceRecord) => {
   if (device.hardware.controlAllowed === true && device.connection.online) return;
   modelConnection?.live?.stop(device.deviceId);
+  visualSequences.delete(device.deviceId);
   commandService.cancelDevice(device.deviceId);
   streamBroker.cancelDevice(device.deviceId);
   latestScreenFrames.clear(device.deviceId);
@@ -1103,7 +1116,7 @@ streamBroker.on("frame", (value: unknown) => {
     latestScreenFrames.accept({ deviceId: frame.deviceId, streamId: frame.streamId,
       payload: frame.payload, contentType });
     const device = unifiedRegistry.get(frame.deviceId);
-    if (contentType === "image/jpeg" && modelConnection?.live
+    if (contentType === "image/jpeg" && modelConnection?.live && !modelConnection.continuousVisual
         && device?.kind === "rokid.bolon" && device.connection.online
         && device.hardware.controlAllowed === true) {
       modelConnection.live.pushImage(frame.deviceId, frame.payload);
@@ -1859,6 +1872,7 @@ function defaultMdnsProxyAddress(): string | undefined {
 
 return { app, server, pairing: deviceAgentPairing, devices: unifiedRegistry, commands: commandService, streams: streamBroker,
   async close() {
+    if (visualPump) clearInterval(visualPump);
     modelBridge?.close();
     latestScreenFrames.close();
     for (const device of unifiedRegistry.list()) {

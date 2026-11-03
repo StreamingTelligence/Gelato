@@ -8,6 +8,7 @@
 
 | 模型端 | 位置 | 接入方式 | 当前能力边界 |
 | --- | --- | --- | --- |
+| StreamingTelligence | [`src/streamingTelligenceEndpoint.ts`](src/streamingTelligenceEndpoint.ts) | 通过 WSS 连接原生流式 mux 的进程内适配器 | 文字提问与每秒一帧 JPEG 画面输入；不支持音频或设备操作提议 |
 | Qwen Live Harness | [`src/qwenLiveEndpoint.ts`](src/qwenLiveEndpoint.ts) | 固定版本的进程内适配器 | 文字／PCM 音频回合、Rokid 实时音频及每秒一帧 JPEG 输入、音频回复；不提议设备操作 |
 | Codex | [`gelato-codex-model/`](gelato-codex-model/) | 独立的 `gelato.model.v1` WebSocket 运行时，内部使用 Codex app-server | 文字／图像回合和设备操作提议；尚不接收音频或持续每秒一帧的输入 |
 
@@ -17,6 +18,7 @@
 
 在仓库根目录运行 `npm ci && npm run build`，然后选择一种模型端：
 
+- StreamingTelligence：设置 `GELATO_MODEL_PROVIDER=streamingtelligence` 和 `STREAMINGTELLIGENCE_API_KEY`；可选设置 `STREAMINGTELLIGENCE_MODEL`（默认 `kairos-v2`）。适配器通过原生流式 mux 接入每秒一帧 JPEG 画面，并返回文字回复。
 - Qwen：设置 `GELATO_MODEL_PROVIDER=qwen-live-harness` 和 `DASHSCOPE_API_KEY`；可选设置 `QWEN_LIVE_ENDPOINT`、`QWEN_LIVE_MODEL`、`QWEN_LIVE_VOICE`。
 - Codex：先启动 [Codex 模型端](gelato-codex-model/README.md)，再在 Controller 设置 `GELATO_MODEL_PROVIDER=codex`、`GELATO_MODEL_SESSION_URL` 和 `GELATO_MODEL_API_KEY`。令牌须与模型端的 `GELATO_MODEL_TOKEN` 一致。通用 `ws` 选项使用同一线协议。
 

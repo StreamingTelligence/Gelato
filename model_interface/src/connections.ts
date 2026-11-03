@@ -1,6 +1,7 @@
 import { HttpModelEndpoint } from "./httpEndpoint.js";
 import { ModelSessionEndpoint, type ModelActionOutcome, type ModelActionProposal } from "./modelSessionEndpoint.js";
 import { QwenLiveEndpoint } from "./qwenLiveEndpoint.js";
+import { StreamingTelligenceEndpoint } from "./streamingTelligenceEndpoint.js";
 import type { ModelEndpoint } from "./types.js";
 
 /** Optional realtime input shared by adapters that actually support it. */
@@ -13,6 +14,7 @@ export interface LiveModelInput {
 export interface ModelConnection {
   endpoint: ModelEndpoint;
   live?: LiveModelInput;
+  continuousVisual?: boolean;
   interactive?: boolean;
 }
 
@@ -28,6 +30,20 @@ export async function createModelConnection(options: ModelConnectionOptions): Pr
   const selected = env.GELATO_MODEL_PROVIDER?.trim() ?? "";
   const provider = selected || (env.GELATO_MODEL_ENDPOINT_URL ? "http" : "");
   if (!provider) return undefined;
+  if (provider === "streamingtelligence") {
+    const endpoint = new StreamingTelligenceEndpoint({
+      apiKey: env.STREAMINGTELLIGENCE_API_KEY ?? "",
+      model: env.STREAMINGTELLIGENCE_MODEL ?? "kairos-v2",
+      origin: env.STREAMINGTELLIGENCE_ORIGIN,
+      maxNewTokens: env.STREAMINGTELLIGENCE_MAX_NEW_TOKENS
+        ? Number(env.STREAMINGTELLIGENCE_MAX_NEW_TOKENS) : undefined
+    });
+    return { endpoint, continuousVisual: true, live: {
+      pushAudio: () => false,
+      pushImage: (deviceId, jpeg) => endpoint.pushLiveImage(deviceId, jpeg),
+      stop: deviceId => endpoint.stopLive(deviceId)
+    } };
+  }
   if (provider === "qwen-live-harness") {
     const endpoint = await QwenLiveEndpoint.create({
       apiKey: env.DASHSCOPE_API_KEY ?? "",
@@ -58,5 +74,5 @@ export async function createModelConnection(options: ModelConnectionOptions): Pr
       model: env.GELATO_MODEL_ID
     }) };
   }
-  throw new Error("GELATO_MODEL_PROVIDER must be qwen-live-harness, codex, ws or http");
+  throw new Error("GELATO_MODEL_PROVIDER must be streamingtelligence, qwen-live-harness, codex, ws or http");
 }

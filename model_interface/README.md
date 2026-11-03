@@ -8,6 +8,7 @@ This directory owns the model protocol, provider-neutral TypeScript interfaces, 
 
 | Runtime | Location | Integration | Declared scope |
 | --- | --- | --- | --- |
+| StreamingTelligence | [`src/streamingTelligenceEndpoint.ts`](src/streamingTelligenceEndpoint.ts) | In-process adapter for the native streaming mux over WSS | Text questions and 1 fps JPEG observations; no audio or device-action proposals |
 | Qwen Live Harness | [`src/qwenLiveEndpoint.ts`](src/qwenLiveEndpoint.ts) | In-process adapter using a pinned `qwen-live-harness` version | Text/PCM audio turns, live Rokid audio and 1 fps JPEG input, audio reply; no device-action proposals |
 | Codex | [`gelato-codex-model/`](gelato-codex-model/) | Independent `gelato.model.v1` WebSocket runtime, driven by Codex app-server | Text/image turns and device-action proposals; no audio or continuous 1 fps ingestion |
 
@@ -17,6 +18,7 @@ This directory owns the model protocol, provider-neutral TypeScript interfaces, 
 
 Build from the repository root with `npm ci && npm run build`. Choose one provider:
 
+- StreamingTelligence: set `GELATO_MODEL_PROVIDER=streamingtelligence` and `STREAMINGTELLIGENCE_API_KEY`; optionally set `STREAMINGTELLIGENCE_MODEL` (default `kairos-v2`). The adapter uses the native streaming mux, with 1 fps JPEG observations and text replies.
 - Qwen: set `GELATO_MODEL_PROVIDER=qwen-live-harness` and `DASHSCOPE_API_KEY`; optionally set `QWEN_LIVE_ENDPOINT`, `QWEN_LIVE_MODEL`, and `QWEN_LIVE_VOICE`.
 - Codex: start the [Codex model runtime](gelato-codex-model/README.md), then set `GELATO_MODEL_PROVIDER=codex`, `GELATO_MODEL_SESSION_URL`, and `GELATO_MODEL_API_KEY` on the Controller. The token must match the runtime's `GELATO_MODEL_TOKEN`. The generic `ws` provider has the same wire behavior.
 
