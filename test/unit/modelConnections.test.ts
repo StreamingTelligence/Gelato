@@ -38,7 +38,9 @@ describe("createModelConnection", () => {
     expect(inferred?.endpoint).toBeInstanceOf(HttpModelEndpoint);
 
     await expect(createModelConnection({ env: { GELATO_MODEL_PROVIDER: "unknown" } }))
-      .rejects.toThrow("must be qwen-live-harness, codex, ws or http");
+      .rejects.toThrow(
+        "must be streamingtelligence, qwen-live-harness, codex, ws or http"
+      );
     await expect(createModelConnection({ env: { GELATO_MODEL_PROVIDER: "qwen-live-harness" } }))
       .rejects.toThrow("DASHSCOPE_API_KEY");
     await expect(createModelConnection({ env: { GELATO_MODEL_PROVIDER: "ws" } }))
