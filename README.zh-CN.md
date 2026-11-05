@@ -28,9 +28,11 @@ Gelato v1 是连接这些设备与 Controller 的统一协议。本仓库提供�
 
 ## 演示视频
 
-https://github.com/user-attachments/assets/5811c155-1fd8-4fdc-9f51-a381bf7f0e6c
+[![观看 Gelato 演示视频](https://streamingtelligence.com/assets/videos/gelato/v1/poster.jpg)](https://streamingtelligence.com/blog/gelato-v1#demo)
 
-观看 [Gelato 演示（1 分 46 秒，MP4）](docs/assets/gelato-demo-v7.mp4)，了解 iPhone 无线控制、水壶提醒，以及通过 Rokid 眼镜提供的实时辅助。
+[▶ 前往官网观看完整演示 · 1 分 46 秒](https://streamingtelligence.com/blog/gelato-v1#demo)
+
+了解 iPhone 无线控制、水壶提醒，以及通过 Rokid 眼镜提供的实时辅助。
 
 ## 为什么选择 Gelato
 
@@ -44,11 +46,11 @@ Gelato 的名字源于希腊神话中被赋予生命的雕像 Galatea。正如�
 
 ## 工作原理
 
-```mermaid
-flowchart LR
-    D[设备端] <-->|gelato.v1| C[Controller]
-    C <-->|gelato.model.v1| M[可选模型运行时]
-```
+<p align="center">
+  <a href="docs/assets/gelato-system-architecture.zh-CN.png">
+    <img src="docs/assets/gelato-system-architecture.zh-CN.png" alt="Gelato v1 系统架构与信任边界" width="100%">
+  </a>
+</p>
 
 - **设备端。** 检查本地前置条件、声明能力、发布指令或观察信息、接收回复，并决定是否执行路由而来的命令。
 - **Controller。** 负责配对、设备身份、认证会话、状态、策略、命令、取消、媒体流以及可选的模型路由。

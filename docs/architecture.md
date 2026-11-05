@@ -4,15 +4,11 @@
 
 Gelato is StreamingTelligence Lab's foundation for bringing streaming intelligence to many kinds of devices. Device-side `gelato.v1` has two parties: the device implementation invokes its local hardware or platform capabilities, while a Controller handles pairing, connections, commands, and media. An optional model runtime attaches through a separate `gelato.model.v1` session interface; account services are outside both protocols. The protocol does not require the device side to be split into separate processes or components.
 
-```text
-Device app / firmware (or authorized companion)       Server
-┌─────────────────────────────────────────┐           ┌────────────────────────┐
-│ Local permissions, pairing confirmation │           │ Controller             │
-│ and control consent                     │ ⇄ network ⇄│ Pairing, connection,   │
-│ Gelato v1 connection + local capabilities│           │ messages, and media    │
-└─────────────────────────────────────────┘           └────────────────────────┘
-                                                       optional: account / model session interface
-```
+<p align="center">
+  <a href="assets/gelato-system-architecture.png">
+    <img src="assets/gelato-system-architecture.png" alt="Gelato v1 system architecture and trust boundaries" width="100%">
+  </a>
+</p>
 
 ## Roles and trust boundaries
 

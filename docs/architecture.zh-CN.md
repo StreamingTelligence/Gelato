@@ -4,14 +4,11 @@
 
 Gelato 是 StreamingTelligence Lab 将流式智能带到不同设备的基础设施。设备侧 `gelato.v1` 的两端是设备端与 Controller：设备端通过本地实现调用实际硬件或平台能力；Controller 管理配对、连接、命令和媒体。可选的模型运行时通过独立的 `gelato.model.v1` 会话接口接入 Controller；账号服务不属于这两个协议。协议不要求设备端拆成多个进程或组件。
 
-```text
-设备端 App／固件（或经授权的伴侣 App）                 服务端
-┌──────────────────────────────────────┐           ┌──────────────────────┐
-│ 本地权限、配对确认与控制授权         │           │ Controller           │
-│ Gelato v1 连接与本地能力实现          │ ⇄ 网络 ⇄ │ 配对、连接、消息与媒体│
-└──────────────────────────────────────┘           └──────────────────────┘
-                                                    可选账号服务／模型会话接口
-```
+<p align="center">
+  <a href="assets/gelato-system-architecture.zh-CN.png">
+    <img src="assets/gelato-system-architecture.zh-CN.png" alt="Gelato v1 系统架构与信任边界" width="100%">
+  </a>
+</p>
 
 ## 角色与信任边界
 

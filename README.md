@@ -28,9 +28,11 @@ Gelato v1 is the common protocol connecting these devices to a Controller. This 
 
 ## Demo
 
-https://github.com/user-attachments/assets/5811c155-1fd8-4fdc-9f51-a381bf7f0e6c
+[![Watch the Gelato demo](https://streamingtelligence.com/assets/videos/gelato/v1/poster.jpg)](https://streamingtelligence.com/blog/gelato-v1#demo)
 
-Watch the [Gelato demo (1:46, MP4)](docs/assets/gelato-demo-v7.mp4) to see wireless iPhone control, a kettle notification, and real-time assistance through Rokid glasses.
+[▶ Watch the full demo on our website · 1:46](https://streamingtelligence.com/blog/gelato-v1#demo)
+
+See wireless iPhone control, a kettle notification, and real-time assistance through Rokid glasses.
 
 ## Why Gelato
 
@@ -44,11 +46,11 @@ See the [architecture](docs/architecture.md) for the complete system design.
 
 ## How it works
 
-```mermaid
-flowchart LR
-    D[Device agent] <-->|gelato.v1| C[Controller]
-    C <-->|gelato.model.v1| M[Optional model runtime]
-```
+<p align="center">
+  <a href="docs/assets/gelato-system-architecture.png">
+    <img src="docs/assets/gelato-system-architecture.png" alt="Gelato v1 system architecture and trust boundaries" width="100%">
+  </a>
+</p>
 
 - **Device agent.** Checks local prerequisites, advertises capabilities, publishes instructions or observations, receives replies, and decides whether to execute routed commands.
 - **Controller.** Handles pairing, device identity, authenticated sessions, state, policy, commands, cancellation, media streams, and optional model routing.
