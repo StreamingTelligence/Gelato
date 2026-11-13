@@ -15,6 +15,12 @@
   <strong>连接流式智能与真实世界设备的开放协议与 SDK 栈。</strong>
 </p>
 
+<p align="center">
+  <a href="https://streamingtelligence.com"><img alt="官网" src="https://img.shields.io/badge/Website-streamingtelligence.com-111111?style=flat-square&amp;logo=googlechrome&amp;logoColor=white"></a>
+  <a href="https://discord.gg/MpjcJE54dc"><img alt="Discord" src="https://img.shields.io/badge/Discord-Community-5865F2?style=flat-square&amp;logo=discord&amp;logoColor=white"></a>
+  <a href="https://x.com/StreamingTLab"><img alt="X" src="https://img.shields.io/badge/X-%40StreamingTLab-000000?style=flat-square&amp;logo=x&amp;logoColor=white"></a>
+</p>
+
 Gelato 是 **StreamingTelligence Lab 的生态支撑项目**。它让手机、智能眼镜、摄像头和其他联网硬件，既成为流式智能感知世界的传感器，也成为流式智能回应用户、与现实世界交互的环境。Controller 负责身份、策略、路由、命令、媒体和可选模型集成；每台设备只声明自己实际具备的能力，并保留最终执行权。
 
 Gelato v1 是连接这些设备与 Controller 的统一协议。本仓库提供协议规范、设备端和服务端 SDK，以及各类已支持设备的最小可行实现（MVP）。
@@ -152,3 +158,15 @@ npm run ci
 ## 贡献与许可
 
 贡献说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。Gelato 采用 [Apache License 2.0](LICENSE) 开源；第三方组件仍遵循各自的许可证。
+
+## Star 增长趋势
+
+<p align="center">
+  <a href="https://www.star-history.com/#StreamingTelligence/Gelato&amp;Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=StreamingTelligence/Gelato&amp;type=Date&amp;theme=dark">
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=StreamingTelligence/Gelato&amp;type=Date">
+      <img alt="Gelato Star 增长趋势图" src="https://api.star-history.com/svg?repos=StreamingTelligence/Gelato&amp;type=Date">
+    </picture>
+  </a>
+</p>
