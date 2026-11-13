@@ -15,6 +15,12 @@
   <strong>An open protocol and SDK stack that connects streaming intelligence to real-world devices.</strong>
 </p>
 
+<p align="center">
+  <a href="https://streamingtelligence.com"><img alt="Website" src="https://img.shields.io/badge/Website-streamingtelligence.com-111111?style=flat-square&amp;logo=googlechrome&amp;logoColor=white"></a>
+  <a href="https://discord.gg/MpjcJE54dc"><img alt="Discord" src="https://img.shields.io/badge/Discord-Community-5865F2?style=flat-square&amp;logo=discord&amp;logoColor=white"></a>
+  <a href="https://x.com/StreamingTLab"><img alt="X" src="https://img.shields.io/badge/X-%40StreamingTLab-000000?style=flat-square&amp;logo=x&amp;logoColor=white"></a>
+</p>
+
 Gelato is an ecosystem project of **StreamingTelligence Lab**. It lets phones, smart glasses, cameras, and other networked hardware become both sensors through which streaming intelligence perceives the world and environments in which it can respond to people and interact with the real world. A Controller manages identity, policy, routing, commands, media, and optional model integration, while each device advertises only the capabilities it actually has and retains final authority over what it executes.
 
 Gelato v1 is the common protocol connecting these devices to a Controller. This repository provides the protocol specification, device and server SDKs, and a minimum viable implementation (MVP) for each supported device.
@@ -152,3 +158,15 @@ The example Controller selects a model connection through `@gelato/model-interfa
 ## Contributing and license
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution requirements. Gelato is licensed under the [Apache License 2.0](LICENSE). Third-party components retain their own licenses.
+
+## Star history
+
+<p align="center">
+  <a href="https://www.star-history.com/#StreamingTelligence/Gelato&amp;Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=StreamingTelligence/Gelato&amp;type=Date&amp;theme=dark">
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=StreamingTelligence/Gelato&amp;type=Date">
+      <img alt="Gelato star history chart" src="https://api.star-history.com/svg?repos=StreamingTelligence/Gelato&amp;type=Date">
+    </picture>
+  </a>
+</p>
